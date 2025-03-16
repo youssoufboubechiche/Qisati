@@ -1,0 +1,99 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                Int       @id @default(autoincrement())
+  email             String    @unique
+  password          String
+  name              String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  resetPasswordToken String?   @unique
+  resetPasswordExpires DateTime?
+  sessions          Session[]
+  stories             Story[]   // User can create multiple stories
+}
+
+model Session {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique
+  userId    Int
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Story model (main container for a story)
+model Story {
+  id                Int       @id @default(autoincrement())
+  title             String
+  setting           String    @db.Text // Detailed story setting/environment
+  characterInfo     String    @db.Text // Character traits and details
+  genre             String    // E.g., fantasy, sci-fi, adventure
+  style             String    // E.g., educational, funny, magical
+  targetAge         Int       // Age range the story is suitable for
+  targetPages       Int       // Target number of pages for the story
+  isCompleted       Boolean   @default(false)
+  isPublic          Boolean   @default(false)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  // Relations
+  authorId          Int
+  author            User      @relation(fields: [authorId], references: [id])
+  pages             StoryPage[] // One-to-many relation with story pages
+  
+  // Additional helpful fields
+  coverImage        String?   // URL to a cover image
+  summary           String?   @db.Text // Brief summary of the story
+  tags              String[]  // Array of tags to categorize stories
+  likeCount         Int       @default(0) // Track popularity
+  viewCount         Int       @default(0) // Track views
+  
+  @@index([authorId])
+  @@index([isPublic, isCompleted]) // For querying public and completed stories
+  @@index([targetAge]) // For age-appropriate recommendations
+}
+
+// StoryPage model (individual pages within a story)
+model StoryPage {
+  id                Int       @id @default(autoincrement())
+  pageNumber        Int       // Sequence number within the story
+  text              String    @db.Text // Story text for this page
+  imageUrl          String?   // URL to ai generated image
+  suggestedDecision1 String?  @db.Text // Option 1 suggested by AI
+  suggestedDecision2 String?  @db.Text // Option 2 suggested by AI
+  
+  // The decision that was actually taken (could be custom or one of the suggestions)
+  decisionTaken     String?   @db.Text
+  
+  // Relations
+  storyId           Int
+  story             Story     @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  
+  // For linear progression
+  nextPageId        Int?      @unique
+  nextPage          StoryPage? @relation("PageSequence", fields: [nextPageId], references: [id])
+  previousPage      StoryPage? @relation("PageSequence")
+  
+  // Additional helpful fields
+  createdAt         DateTime  @default(now())
+  generationPrompt  String?   @db.Text // The prompt used to generate this page
+  aiModel           String?   // The AI model used to generate the content
+  readTime          Int?      // Estimated time to read this page (in seconds)
+  
+  @@unique([storyId, pageNumber]) // Ensure page numbers are unique within a story
+  @@index([storyId])
+}
