@@ -39,6 +39,6 @@ function redirectToLogin(request: NextRequest) {
 export const config = {
   matcher: [
     // Protected routes
-    "/dashboard/:path*",
+    //..."/dashboard/:path*",
   ],
 };

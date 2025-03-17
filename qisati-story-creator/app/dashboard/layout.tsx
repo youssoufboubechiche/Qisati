@@ -18,6 +18,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
+import Image from "next/image"
 
 export default function DashboardLayout({
   children,
@@ -41,10 +42,7 @@ export default function DashboardLayout({
         <Sidebar className="border-r border-orange-200">
           <SidebarHeader className="border-b border-orange-200 px-6 py-4">
             <Link href="/dashboard" className="flex items-center gap-2">
-              <div className="rounded-full bg-red-500 p-2">
-                <BookOpen className="h-6 w-6 text-white" />
-              </div>
-              <span className="text-2xl font-bold text-red-500">Qisati</span>
+              <Image src="/Qisati.png" alt="Qisati Logo" width={120} height={40} />
             </Link>
           </SidebarHeader>
           <SidebarContent className="px-4 py-6">
