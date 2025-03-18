@@ -332,18 +332,21 @@ export const useStories = () => {
   // Update a specific page
   const updateStoryPage = async (
     storyId: number,
-    pageId: number,
+    pageNumber: number,
     updateData: UpdatePageData
   ): Promise<StoryPage | null> => {
     setLoading(true);
     setError(null);
 
     try {
-      const response = await fetch(`/api/stories/${storyId}/pages/${pageId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updateData),
-      });
+      const response = await fetch(
+        `/api/stories/${storyId}/pages/${pageNumber}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(updateData),
+        }
+      );
 
       const data = await handleResponse(response);
       return data;
@@ -378,10 +381,7 @@ export const useStories = () => {
   };
 
   // Start a story - generate the first page and save it
-  const startStory = async (
-    storyId: number,
-    aiModel?: string
-  ): Promise<StoryPage | null> => {
+  const startStory = async (storyId: number): Promise<StoryPage | null> => {
     setLoading(true);
     setError(null);
 
@@ -400,8 +400,8 @@ export const useStories = () => {
         imagePrompt: generatedData.imagePrompt,
         suggestedDecisions: generatedData.suggestedDecisions,
         pageNumber: 1, // First page
-        aiModel: aiModel || "openrouter", // Default or pass in preferred model
-        generationPrompt: "initial_story_prompt", // Optional, for tracking what prompt was used
+        aiModel: generatedData.model,
+        generationPrompt: generatedData.prompt,
       };
 
       // Save the page to the database
@@ -415,12 +415,68 @@ export const useStories = () => {
     }
   };
 
+  const continueStory = async (
+    storyId: number,
+    decisionTaken: string
+  ): Promise<StoryPage | null> => {
+    setLoading(true);
+    setError(null);
+    try {
+      // Get last page and update it with the decision
+      const pages = await getStoryPages(storyId);
+      const lastPage = pages?.[pages.length - 1];
+      if (!lastPage) {
+        throw new Error("Last page not found");
+      }
+      const updateResponse = await updateStoryPage(
+        storyId,
+        lastPage.pageNumber,
+        {
+          decisionTaken: decisionTaken,
+        }
+      );
+
+      if (!updateResponse) {
+        throw new Error("Failed to update last page");
+      }
+
+      const response = await fetch(`/api/stories/${storyId}/continue`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ decisionTaken }),
+      });
+      const generatedData = await handleResponse(response);
+      const nextPageData: CreatePageData = {
+        text: generatedData.text,
+        imagePrompt: generatedData.imagePrompt,
+        suggestedDecisions: generatedData.suggestedDecisions,
+        pageNumber: lastPage.pageNumber + 1,
+        aiModel: generatedData.model,
+        generationPrompt: generatedData.prompt,
+      };
+
+      const savedPage = await createStoryPage(storyId, nextPageData);
+      const story = await getStory(storyId);
+      if (
+        story &&
+        nextPageData.pageNumber !== undefined &&
+        nextPageData.pageNumber >= story.targetPages
+      ) {
+        await updateStory(storyId, { isCompleted: true });
+      }
+      return savedPage;
+    } catch (error) {
+      return handleError(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Continue a story page based on a decision and save the next page
   const continueStoryPage = async (
     storyId: number,
     pageNumber: number,
-    decisionTaken: string,
-    aiModel?: string
+    decisionTaken: string
   ): Promise<StoryPage | null> => {
     setLoading(true);
     setError(null);
@@ -457,8 +513,8 @@ export const useStories = () => {
         imagePrompt: generatedData.imagePrompt,
         suggestedDecisions: generatedData.suggestedDecisions,
         pageNumber: pageNumber + 1, // Increment page number
-        aiModel: aiModel || "openrouter",
-        generationPrompt: `continuation_from_page_${pageNumber}`,
+        aiModel: generatedData.model,
+        generationPrompt: generatedData.prompt,
       };
 
       // Save the new page
@@ -498,6 +554,7 @@ export const useStories = () => {
     updateStoryPage,
     deleteStoryPage,
     startStory,
+    continueStory,
     continueStoryPage,
   };
 };

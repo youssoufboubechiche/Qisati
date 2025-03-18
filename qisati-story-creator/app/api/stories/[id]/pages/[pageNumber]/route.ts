@@ -65,10 +65,10 @@ export async function GET(
   }
 }
 
-// PUT update a specific page
-export async function PUT(
+// PATCH update a specific page
+export async function PATCH(
   request: NextRequest,
-  { params }: { params: { storyId: string; pageId: string } }
+  { params }: { params: { id: string; pageNumber: string } }
 ) {
   try {
     const cookieStore = await cookies();
@@ -90,8 +90,9 @@ export async function PUT(
       );
     }
 
-    const storyId = parseInt(params.storyId);
-    const pageId = parseInt(params.pageId);
+    params = await params;
+    const storyId = parseInt(params.id);
+    const pageNumber = parseInt(params.pageNumber);
     const body = await request.json();
 
     // Check if the story exists and belongs to the user
@@ -114,8 +115,8 @@ export async function PUT(
     // Check if the page exists
     const page = await prisma.storyPage.findFirst({
       where: {
-        id: pageId,
         storyId,
+        pageNumber,
       },
     });
 
@@ -123,18 +124,24 @@ export async function PUT(
       return NextResponse.json({ error: "Page not found" }, { status: 404 });
     }
 
+    // Construct the data object dynamically
+    const data: { [key: string]: any } = {};
+
+    if (body.text !== undefined) data.text = body.text;
+    if (body.imageUrl !== undefined) data.imageUrl = body.imageUrl;
+    if (body.suggestedDecisions !== undefined)
+      data.suggestedDecisions = body.suggestedDecisions;
+    if (body.decisionTaken !== undefined)
+      data.decisionTaken = body.decisionTaken;
+    if (body.generationPrompt !== undefined)
+      data.generationPrompt = body.generationPrompt;
+    if (body.aiModel !== undefined) data.aiModel = body.aiModel;
+    if (body.readTime !== undefined) data.readTime = body.readTime;
+
     // Update the page
     const updatedPage = await prisma.storyPage.update({
-      where: { id: pageId },
-      data: {
-        text: body.text,
-        imageUrl: body.imageUrl,
-        suggestedDecisions: body.suggestedDecisions,
-        decisionTaken: body.decisionTaken,
-        generationPrompt: body.generationPrompt,
-        aiModel: body.aiModel,
-        readTime: body.readTime,
-      },
+      where: { storyId_pageNumber: { storyId, pageNumber } },
+      data,
     });
 
     return NextResponse.json(updatedPage);
@@ -172,6 +179,7 @@ export async function DELETE(
       );
     }
 
+    params = await params;
     const storyId = parseInt(params.storyId);
     const pageId = parseInt(params.pageId);
 

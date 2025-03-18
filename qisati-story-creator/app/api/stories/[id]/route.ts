@@ -90,6 +90,7 @@ export async function PUT(
       );
     }
 
+    params = await params;
     const id = parseInt(params.id);
     const body = await request.json();
 
@@ -164,6 +165,7 @@ export async function DELETE(
       );
     }
 
+    params = await params;
     const id = parseInt(params.id);
 
     // Check if the story exists and belongs to the user

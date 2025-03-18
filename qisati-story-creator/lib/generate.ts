@@ -1,7 +1,8 @@
+import { metadata } from "@/app/layout";
 import axios from "axios";
 
 export const generateText = async (
-  systrmPrompt: string,
+  systemPrompt: string,
   userPrompt: string,
   apiKey: string,
   frontendUrl: string
@@ -21,7 +22,7 @@ export const generateText = async (
         messages: [
           {
             role: "system",
-            content: systrmPrompt,
+            content: systemPrompt,
           },
           {
             role: "user",
@@ -32,7 +33,15 @@ export const generateText = async (
     }
   );
 
-  return response.data.choices[0].message;
+  //console.log(response.data.choices[0].message);
+
+  return {
+    data: response.data.choices[0].message,
+    metadata: {
+      model: response.data.model,
+      prompt: "system: " + systemPrompt + "\n\nuser: " + userPrompt,
+    },
+  };
 };
 
 // File: lib/promptGeneration.ts
@@ -245,6 +254,7 @@ export function generateInitialStoryPrompt(story: {
   End this segment at a decision point where the reader must choose what happens next.
   
   Provide exactly two suggested decision options that are meaningful choices leading to different story directions.
+  The decisions need to be direct and one sentance long at most.
   Make these options age-appropriate and aligned with the genre and style specified.
   
   Additionally, generate a concise description for an AI to create an image that accompanies this page.
@@ -252,7 +262,7 @@ export function generateInitialStoryPrompt(story: {
   Format your response as a JSON object with these fields:
   - text: The story text
   - suggestedDecisions: An array of decision options
-  - imageDescription: A description for image generation
+  - imagePrompt: A description for image generation
   
   Do not include any other text outside the JSON object.
   `;
@@ -333,6 +343,7 @@ export function generateContinuationPrompt(
   End this segment at a decision point where the reader must choose what happens next.
   
   Provide exactly two suggested decision options that are meaningful choices leading to different story directions.
+  The decisions need to be direct and one sentance long at most.
   Make these options age-appropriate and aligned with the genre and style specified.
   
   Additionally, generate a concise description for an AI to create an image that accompanies this page.
@@ -340,7 +351,7 @@ export function generateContinuationPrompt(
   Format your response as a JSON object with these fields:
   - text: The story text
   - suggestedDecisions: An array of decision options
-  - imageDescription: A description for image generation
+  - imagePrompt: A description for image generation
   
   Do not include any other text outside the JSON object.
   `;
@@ -407,14 +418,14 @@ export function generateFinalSegmentPrompt(
   ### Instructions:
   Write the concluding segment of the story based on the reader's final decision.
   Create a satisfying ending that resolves the main conflict or adventure.
-  This should be slightly longer than previous segments (300-400 words) to provide a proper conclusion.
+  This should be slightly longer than previous segments (200-300 words) to provide a proper conclusion.
   Do not end with any decision points or choices.
   
   Additionally, generate a concise description for an AI to create an image that captures the essence of this concluding segment.
   
   Format your response as a JSON object with these fields:
   - text: The concluding story text
-  - imageDescription: A description for image generation
+  - imagePrompt: A description for image generation
   
   Do not include any other text outside the JSON object.
   `;

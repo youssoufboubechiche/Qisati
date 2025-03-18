@@ -91,13 +91,14 @@ export async function POST(
       frontendUrl
     );
 
-    // Extract JSON response from the result
-    const jsonStart = result.content.indexOf("{");
-    const jsonEnd = result.content.lastIndexOf("}");
-    const jsonString = result.content.substring(jsonStart, jsonEnd + 1);
+    // Extract JSON response from the generated text
+    const jsonStart = result.data.content.indexOf("{");
+    const jsonEnd = result.data.content.lastIndexOf("}");
+    const jsonString = result.data.content.substring(jsonStart, jsonEnd + 1);
     const jsonResponse = JSON.parse(jsonString);
-    // Return the generated text to the client.
-    return NextResponse.json(jsonResponse);
+
+    // Return the generated content to the client
+    return NextResponse.json({ ...jsonResponse, ...result.metadata });
   } catch (error) {
     console.log("Error generating text:", error);
     return NextResponse.json(

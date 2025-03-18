@@ -11,9 +11,10 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string; pageNumber: string } }
+  { params }: { params: { id: string } }
 ) {
   try {
+    // Retrieve auth token from cookies
     const cookieStore = await cookies();
     const token = cookieStore.get("auth_token")?.value;
 
@@ -25,7 +26,6 @@ export async function POST(
     }
 
     const user = await getUserSession(token);
-
     if (!user) {
       return NextResponse.json(
         { error: "Authentication required" },
@@ -33,12 +33,12 @@ export async function POST(
       );
     }
 
+    // Parse story ID from the route params
     params = await params;
     const storyId = parseInt(params.id);
-    const pageNumber = parseInt(params.pageNumber);
-    const body = await request.json();
 
-    // Return if decision is not provided
+    // Parse request body for decision
+    const body = await request.json();
     if (!body.decisionTaken || typeof body.decisionTaken !== "string") {
       return NextResponse.json(
         { error: "Decision taken is required" },
@@ -46,10 +46,9 @@ export async function POST(
       );
     }
 
-    // Get API key and frontend URL from environment variables.
+    // Ensure required environment variables are available
     const apiKey = process.env.OPENROUTER_API_KEY;
     const frontendUrl = process.env.FRONTEND_URL;
-
     if (!apiKey || !frontendUrl) {
       return NextResponse.json(
         { message: "API key and frontend URL are required" },
@@ -57,20 +56,15 @@ export async function POST(
       );
     }
 
-    // Check if the story exists and belongs to the user
-    let story = await prisma.story.findUnique({
+    // Fetch the story and ensure it belongs to the user
+    const story = await prisma.story.findUnique({
       where: { id: storyId },
       include: {
         pages: {
-          orderBy: {
-            pageNumber: "asc",
-          },
+          orderBy: { pageNumber: "asc" },
         },
         author: {
-          select: {
-            id: true,
-            name: true,
-          },
+          select: { id: true, name: true },
         },
       },
     });
@@ -86,38 +80,34 @@ export async function POST(
       );
     }
 
-    // Check if the page exists
-    const page = await prisma.storyPage.findFirst({
-      where: {
-        storyId,
-        pageNumber,
-      },
-      include: {
-        previousPage: true,
-      },
+    // Retrieve the last page in the story (ordered descending)
+    const lastPage = await prisma.storyPage.findFirst({
+      where: { storyId },
+      orderBy: { pageNumber: "desc" },
+      include: { previousPage: true },
     });
 
-    if (!page) {
-      return NextResponse.json({ error: "Page not found" }, { status: 404 });
+    if (!lastPage) {
+      return NextResponse.json(
+        { error: "No pages found for this story" },
+        { status: 404 }
+      );
     }
 
-    // Only keep previous pages
-    story.pages = story.pages.filter((p) => p.pageNumber <= page.pageNumber);
-
-    // Generate the next page
+    // Determine if this should be the final segment
     const systemPrompt = getSystemPrompt(
       story.targetAge,
       story.genre,
       story.style
     );
-
     let userPrompt;
-    if (page.pageNumber >= story.targetPages - 1) {
+    if (lastPage.pageNumber >= story.targetPages - 1) {
       userPrompt = generateFinalSegmentPrompt(body.decisionTaken, story);
     } else {
       userPrompt = generateContinuationPrompt(body.decisionTaken, story);
     }
 
+    // Generate text based on the prompts
     const result = await generateText(
       systemPrompt,
       userPrompt,
@@ -126,6 +116,7 @@ export async function POST(
     );
 
     // Extract JSON response from the generated text
+    console.log(result.data.content);
     const jsonStart = result.data.content.indexOf("{");
     const jsonEnd = result.data.content.lastIndexOf("}");
     const jsonString = result.data.content.substring(jsonStart, jsonEnd + 1);
@@ -134,7 +125,7 @@ export async function POST(
     // Return the generated content to the client
     return NextResponse.json({ ...jsonResponse, ...result.metadata });
   } catch (error) {
-    console.log("Error generating text:", error);
+    console.error("Error generating text:", error);
     return NextResponse.json(
       { message: "Error generating text" },
       { status: 500 }

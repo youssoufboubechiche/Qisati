@@ -76,6 +76,7 @@ export async function POST(
       );
     }
 
+    params = await params;
     const storyId = parseInt(params.id);
     const body = await request.json();
 
@@ -111,8 +112,11 @@ export async function POST(
         storyId,
         pageNumber: nextPageNumber,
         text: body.text,
+        imagePrompt: body.imagePrompt,
         imageUrl: body.imageUrl,
-        suggestedDecisions: body.suggestedDecisions,
+        suggestedDecisions: body.suggestedDecisions
+          ? body.suggestedDecisions
+          : [],
         decisionTaken: body.decisionTaken,
         generationPrompt: body.generationPrompt,
         aiModel: body.aiModel,
