@@ -7,12 +7,12 @@ import { Prisma } from "@prisma/client";
 // GET a specific page
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string; pageId: string } }
+  { params }: { params: { id: string; pageNumber: string } }
 ) {
   try {
     params = await params;
     const storyId = parseInt(params.id);
-    const pageId = parseInt(params.pageId);
+    const pageNumber = parseInt(params.pageNumber);
 
     // Check if the story exists
     const story = await prisma.story.findUnique({
@@ -40,8 +40,8 @@ export async function GET(
     // Get the page
     const page = await prisma.storyPage.findFirst({
       where: {
-        id: pageId,
         storyId,
+        pageNumber,
       },
       include: {
         nextPage: true,
@@ -55,7 +55,7 @@ export async function GET(
     return NextResponse.json(page);
   } catch (error) {
     console.error(
-      `Error fetching story page for storyId: ${params.id}, pageId: ${params.pageId}:`,
+      `Error fetching story page for storyId: ${params.id}, pageNumber: ${params.pageNumber}:`,
       error
     );
     return NextResponse.json(

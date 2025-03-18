@@ -1,6 +1,7 @@
 import { getUserSession } from "@/lib/auth";
 import {
   generateContinuationPrompt,
+  generateFinalSegmentPrompt,
   generateText,
   getSystemPrompt,
 } from "@/lib/generate";
@@ -10,7 +11,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string; pageId: string } }
+  { params }: { params: { id: string; pageNumber: string } }
 ) {
   try {
     const cookieStore = await cookies();
@@ -34,7 +35,7 @@ export async function POST(
 
     params = await params;
     const storyId = parseInt(params.id);
-    const pageId = parseInt(params.pageId);
+    const pageNumber = parseInt(params.pageNumber);
     const body = await request.json();
 
     // Return if decision is not provided
@@ -88,8 +89,8 @@ export async function POST(
     // Check if the page exists
     const page = await prisma.storyPage.findFirst({
       where: {
-        id: pageId,
         storyId,
+        pageNumber,
       },
       include: {
         previousPage: true,
@@ -100,13 +101,22 @@ export async function POST(
       return NextResponse.json({ error: "Page not found" }, { status: 404 });
     }
 
+    // Only keep previous pages
+    story.pages = story.pages.filter((p) => p.pageNumber <= page.pageNumber);
+
     // Generate the next page
     const systemPrompt = getSystemPrompt(
       story.targetAge,
       story.genre,
       story.style
     );
-    const userPrompt = generateContinuationPrompt(body.decisionTaken, story);
+
+    let userPrompt;
+    if (page.pageNumber >= story.targetPages - 1) {
+      userPrompt = generateFinalSegmentPrompt(body.decisionTaken, story);
+    } else {
+      userPrompt = generateContinuationPrompt(body.decisionTaken, story);
+    }
 
     const result = await generateText(
       systemPrompt,
