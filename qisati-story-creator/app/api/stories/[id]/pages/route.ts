@@ -9,6 +9,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
+    params = await params;
     const storyId = parseInt(params.id);
 
     // Check if the story exists

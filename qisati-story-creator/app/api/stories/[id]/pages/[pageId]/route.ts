@@ -10,6 +10,7 @@ export async function GET(
   { params }: { params: { id: string; pageId: string } }
 ) {
   try {
+    params = await params;
     const storyId = parseInt(params.id);
     const pageId = parseInt(params.pageId);
 

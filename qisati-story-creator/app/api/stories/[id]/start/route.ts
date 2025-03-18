@@ -1,6 +1,7 @@
 import { getUserSession } from "@/lib/auth";
 import {
   generateContinuationPrompt,
+  generateInitialStoryPrompt,
   generateText,
   getSystemPrompt,
 } from "@/lib/generate";
@@ -10,7 +11,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string; pageId: string } }
+  { params }: { params: { id: string } }
 ) {
   try {
     const cookieStore = await cookies();
@@ -34,16 +35,6 @@ export async function POST(
 
     params = await params;
     const storyId = parseInt(params.id);
-    const pageId = parseInt(params.pageId);
-    const body = await request.json();
-
-    // Return if decision is not provided
-    if (!body.decisionTaken || typeof body.decisionTaken !== "string") {
-      return NextResponse.json(
-        { error: "Decision taken is required" },
-        { status: 400 }
-      );
-    }
 
     // Get API key and frontend URL from environment variables.
     const apiKey = process.env.OPENROUTER_API_KEY;
@@ -85,28 +76,13 @@ export async function POST(
       );
     }
 
-    // Check if the page exists
-    const page = await prisma.storyPage.findFirst({
-      where: {
-        id: pageId,
-        storyId,
-      },
-      include: {
-        previousPage: true,
-      },
-    });
-
-    if (!page) {
-      return NextResponse.json({ error: "Page not found" }, { status: 404 });
-    }
-
     // Generate the next page
     const systemPrompt = getSystemPrompt(
       story.targetAge,
       story.genre,
       story.style
     );
-    const userPrompt = generateContinuationPrompt(body.decisionTaken, story);
+    const userPrompt = generateInitialStoryPrompt(story);
 
     const result = await generateText(
       systemPrompt,
