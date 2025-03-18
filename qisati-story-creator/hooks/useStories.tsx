@@ -12,7 +12,7 @@ export interface Story {
   targetPages: number;
   isCompleted: boolean;
   isPublic: boolean;
-  summary: string;
+  summary: string | null;
   coverImage: string;
   tags: string[];
   viewCount: number;
@@ -23,12 +23,7 @@ export interface Story {
     id: number;
     name: string;
   };
-  pages?:
-    | StoryPage[]
-    | {
-        id: number;
-        pageNumber: number;
-      }[];
+  pages?: StoryPage[];
 }
 
 export interface StoryPage {

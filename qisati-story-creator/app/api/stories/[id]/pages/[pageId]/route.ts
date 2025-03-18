@@ -7,10 +7,10 @@ import { Prisma } from "@prisma/client";
 // GET a specific page
 export async function GET(
   request: NextRequest,
-  { params }: { params: { storyId: string; pageId: string } }
+  { params }: { params: { id: string; pageId: string } }
 ) {
   try {
-    const storyId = parseInt(params.storyId);
+    const storyId = parseInt(params.id);
     const pageId = parseInt(params.pageId);
 
     // Check if the story exists
@@ -53,7 +53,10 @@ export async function GET(
 
     return NextResponse.json(page);
   } catch (error) {
-    console.error("Error fetching story page:", error);
+    console.error(
+      `Error fetching story page for storyId: ${params.id}, pageId: ${params.pageId}:`,
+      error
+    );
     return NextResponse.json(
       { error: "Failed to fetch story page" },
       { status: 500 }
