@@ -247,9 +247,12 @@ export function generateInitialStoryPrompt(story: {
   Provide exactly two suggested decision options that are meaningful choices leading to different story directions.
   Make these options age-appropriate and aligned with the genre and style specified.
   
+  Additionally, generate a concise description for an AI to create an image that accompanies this page.
+  
   Format your response as a JSON object with these fields:
   - text: The story text
   - suggestedDecisions: An array of decision options
+  - imageDescription: A description for image generation
   
   Do not include any other text outside the JSON object.
   `;
@@ -304,7 +307,7 @@ export function generateContinuationPrompt(
     ? `Start moving the story toward a satisfying conclusion. The story should end in ${
         story.targetPages - story.pages.length
       } more segments.`
-    : `Continue developing the story with an engaging new segment. this is segement ${
+    : `Continue developing the story with an engaging new segment. This is segment ${
         story.pages.length + 1
       } of ${story.targetPages}.`;
 
@@ -332,9 +335,12 @@ export function generateContinuationPrompt(
   Provide exactly two suggested decision options that are meaningful choices leading to different story directions.
   Make these options age-appropriate and aligned with the genre and style specified.
   
+  Additionally, generate a concise description for an AI to create an image that accompanies this page.
+  
   Format your response as a JSON object with these fields:
   - text: The story text
   - suggestedDecisions: An array of decision options
+  - imageDescription: A description for image generation
   
   Do not include any other text outside the JSON object.
   `;
@@ -404,8 +410,11 @@ export function generateFinalSegmentPrompt(
   This should be slightly longer than previous segments (300-400 words) to provide a proper conclusion.
   Do not end with any decision points or choices.
   
-  Format your response as a JSON object with this field:
+  Additionally, generate a concise description for an AI to create an image that captures the essence of this concluding segment.
+  
+  Format your response as a JSON object with these fields:
   - text: The concluding story text
+  - imageDescription: A description for image generation
   
   Do not include any other text outside the JSON object.
   `;

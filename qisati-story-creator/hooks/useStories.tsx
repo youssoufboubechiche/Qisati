@@ -31,6 +31,7 @@ export interface StoryPage {
   storyId: number;
   pageNumber: number;
   text: string;
+  imagePrompt: string;
   imageUrl?: string;
   suggestedDecisions?: string[];
   decisionTaken?: string;
@@ -93,6 +94,7 @@ export interface UpdateStoryData {
 
 export interface CreatePageData {
   text: string;
+  imagePrompt: string;
   imageUrl?: string;
   suggestedDecisions?: string[];
   decisionTaken?: string;
@@ -104,6 +106,7 @@ export interface CreatePageData {
 
 export interface UpdatePageData {
   text?: string;
+  imagePrompt?: string;
   imageUrl?: string;
   suggestedDecisions?: string[];
   decisionTaken?: string;
@@ -394,6 +397,7 @@ export const useStories = () => {
       // Then save the generated content as the first page
       const pageData: CreatePageData = {
         text: generatedData.text,
+        imagePrompt: generatedData.imagePrompt,
         suggestedDecisions: generatedData.suggestedDecisions,
         pageNumber: 1, // First page
         aiModel: aiModel || "openrouter", // Default or pass in preferred model
@@ -450,6 +454,7 @@ export const useStories = () => {
       // Create the next page with the generated content
       const nextPageData: CreatePageData = {
         text: generatedData.text,
+        imagePrompt: generatedData.imagePrompt,
         suggestedDecisions: generatedData.suggestedDecisions,
         pageNumber: pageNumber + 1, // Increment page number
         aiModel: aiModel || "openrouter",

@@ -72,6 +72,7 @@ model StoryPage {
   id                Int       @id @default(autoincrement())
   pageNumber        Int       // Sequence number within the story
   text              String    @db.Text // Story text for this page
+  imagePrompt       String    @db.Text // Promt to generate image
   imageUrl          String?   // URL to ai generated image
   suggestedDecisions Json      // Array of decisions suggested by AI
   
