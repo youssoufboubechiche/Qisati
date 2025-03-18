@@ -9,8 +9,8 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
 
     // Parse query parameters
-    const isPublic = searchParams.get("isPublic") === "true";
-    const isCompleted = searchParams.get("isCompleted") === "true";
+    const isPublic = searchParams.get("isPublic");
+    const isCompleted = searchParams.get("isCompleted");
     const genre = searchParams.get("genre");
     const targetAge = searchParams.get("targetAge")
       ? parseInt(searchParams.get("targetAge")!)
@@ -26,8 +26,8 @@ export async function GET(request: NextRequest) {
     // Build filter object
     const filter: any = {};
 
-    if (isPublic !== undefined) filter.isPublic = isPublic;
-    if (isCompleted !== undefined) filter.isCompleted = isCompleted;
+    if (isPublic !== null) filter.isPublic = isPublic === "true";
+    if (isCompleted !== null) filter.isCompleted = isCompleted === "true";
     if (genre) filter.genre = genre;
     if (targetAge) filter.targetAge = targetAge;
 

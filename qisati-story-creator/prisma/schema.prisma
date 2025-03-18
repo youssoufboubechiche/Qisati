@@ -73,8 +73,7 @@ model StoryPage {
   pageNumber        Int       // Sequence number within the story
   text              String    @db.Text // Story text for this page
   imageUrl          String?   // URL to ai generated image
-  suggestedDecision1 String?  @db.Text // Option 1 suggested by AI
-  suggestedDecision2 String?  @db.Text // Option 2 suggested by AI
+  suggestedDecisions Json      // Array of decisions suggested by AI
   
   // The decision that was actually taken (could be custom or one of the suggestions)
   decisionTaken     String?   @db.Text

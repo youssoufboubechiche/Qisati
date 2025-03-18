@@ -137,8 +137,10 @@ export default function CreateStory() {
           }. ${
             characterName || "Alex"
           } had always dreamed of discovering the secrets hidden within this magical world.`,
-          suggestedDecision1: "Follow the mysterious path",
-          suggestedDecision2: "Talk to a friendly creature",
+          suggestedDecisions: [
+            "Follow the mysterious path",
+            "Talk to a friendly creature",
+          ],
           generationPrompt: storyPrompt,
           readTime: 1,
         });

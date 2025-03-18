@@ -129,8 +129,7 @@ export async function PUT(
       data: {
         text: body.text,
         imageUrl: body.imageUrl,
-        suggestedDecision1: body.suggestedDecision1,
-        suggestedDecision2: body.suggestedDecision2,
+        suggestedDecisions: body.suggestedDecisions,
         decisionTaken: body.decisionTaken,
         generationPrompt: body.generationPrompt,
         aiModel: body.aiModel,

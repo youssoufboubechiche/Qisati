@@ -32,8 +32,7 @@ export interface StoryPage {
   pageNumber: number;
   text: string;
   imageUrl?: string;
-  suggestedDecision1?: string;
-  suggestedDecision2?: string;
+  suggestedDecisions?: string[];
   decisionTaken?: string;
   generationPrompt?: string;
   aiModel?: string;
@@ -95,8 +94,7 @@ export interface UpdateStoryData {
 export interface CreatePageData {
   text: string;
   imageUrl?: string;
-  suggestedDecision1?: string;
-  suggestedDecision2?: string;
+  suggestedDecisions?: string[];
   decisionTaken?: string;
   generationPrompt?: string;
   aiModel?: string;
@@ -106,8 +104,7 @@ export interface CreatePageData {
 export interface UpdatePageData {
   text?: string;
   imageUrl?: string;
-  suggestedDecision1?: string;
-  suggestedDecision2?: string;
+  suggestedDecisions?: string[];
   decisionTaken?: string;
   generationPrompt?: string;
   aiModel?: string;

@@ -249,8 +249,7 @@ export function generateInitialStoryPrompt(story: {
   
   Format your response as a JSON object with these fields:
   - text: The story text
-  - suggestedDecision1: The first decision option
-  - suggestedDecision2: The second decision option
+  - suggestedDecisions: An array of decision options
   
   Do not include any other text outside the JSON object.
   `;
@@ -335,8 +334,7 @@ export function generateContinuationPrompt(
   
   Format your response as a JSON object with these fields:
   - text: The story text
-  - suggestedDecision1: The first decision option
-  - suggestedDecision2: The second decision option
+  - suggestedDecisions: An array of decision options
   
   Do not include any other text outside the JSON object.
   `;
