@@ -47,7 +47,7 @@ export default function CreateStory() {
   const [storyPrompt, setStoryPrompt] = useState("");
 
   // Import the stories hook
-  const { loading, error, createStory, createStoryPage } = useStories();
+  const { loading, error, createStory, startStory } = useStories();
 
   const handleThemeSelect = (theme: string) => {
     setSelectedTheme(theme);
@@ -131,19 +131,7 @@ export default function CreateStory() {
 
       if (newStory) {
         // Create the first page of the story
-        const firstPage = await createStoryPage(newStory.id, {
-          text: `Once upon a time, in a ${getStorySettings()}, there lived a young explorer named ${
-            characterName || "Alex"
-          }. ${
-            characterName || "Alex"
-          } had always dreamed of discovering the secrets hidden within this magical world.`,
-          suggestedDecisions: [
-            "Follow the mysterious path",
-            "Talk to a friendly creature",
-          ],
-          generationPrompt: storyPrompt,
-          readTime: 1,
-        });
+        const firstPage = await startStory(newStory.id);
 
         if (firstPage) {
           // Redirect to the read page

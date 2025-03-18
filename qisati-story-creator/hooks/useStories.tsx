@@ -21,7 +21,7 @@ export interface Story {
   updatedAt: string;
   author?: {
     id: number;
-    name: string;
+    name: true;
   };
   pages?: StoryPage[];
 }
@@ -99,6 +99,7 @@ export interface CreatePageData {
   generationPrompt?: string;
   aiModel?: string;
   readTime?: number;
+  pageNumber?: number;
 }
 
 export interface UpdatePageData {
@@ -109,6 +110,21 @@ export interface UpdatePageData {
   generationPrompt?: string;
   aiModel?: string;
   readTime?: number;
+}
+
+// New interfaces for the generation endpoints
+export interface StoryStartResponse {
+  text: string;
+  suggestedDecisions: string[];
+}
+
+export interface StoryContinuationResponse {
+  text: string;
+  suggestedDecisions: string[];
+}
+
+export interface ContinuationData {
+  decisionTaken: string;
 }
 
 export const useStories = () => {
@@ -358,6 +374,111 @@ export const useStories = () => {
     }
   };
 
+  // Start a story - generate the first page and save it
+  const startStory = async (
+    storyId: number,
+    aiModel?: string
+  ): Promise<StoryPage | null> => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      // First, generate the story beginning
+      const response = await fetch(`/api/stories/${storyId}/start`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      const generatedData = await handleResponse(response);
+
+      // Then save the generated content as the first page
+      const pageData: CreatePageData = {
+        text: generatedData.text,
+        suggestedDecisions: generatedData.suggestedDecisions,
+        pageNumber: 1, // First page
+        aiModel: aiModel || "openrouter", // Default or pass in preferred model
+        generationPrompt: "initial_story_prompt", // Optional, for tracking what prompt was used
+      };
+
+      // Save the page to the database
+      const savedPage = await createStoryPage(storyId, pageData);
+
+      return savedPage;
+    } catch (error) {
+      return handleError(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Continue a story page based on a decision and save the next page
+  const continueStoryPage = async (
+    storyId: number,
+    pageNumber: number,
+    decisionTaken: string,
+    aiModel?: string
+  ): Promise<StoryPage | null> => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      // First, get the current page to update it with the decision
+      const pages = await getStoryPages(storyId);
+      const currentPage = pages?.find((page) => page.pageNumber === pageNumber);
+
+      if (!currentPage) {
+        throw new Error("Current page not found");
+      }
+
+      // Update the current page with the decision taken
+      await updateStoryPage(storyId, currentPage.id, {
+        decisionTaken: decisionTaken,
+      });
+
+      // Generate the continuation
+      const response = await fetch(
+        `/api/stories/${storyId}/pages/${pageNumber}/continue`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ decisionTaken }),
+        }
+      );
+
+      const generatedData = await handleResponse(response);
+
+      // Create the next page with the generated content
+      const nextPageData: CreatePageData = {
+        text: generatedData.text,
+        suggestedDecisions: generatedData.suggestedDecisions,
+        pageNumber: pageNumber + 1, // Increment page number
+        aiModel: aiModel || "openrouter",
+        generationPrompt: `continuation_from_page_${pageNumber}`,
+      };
+
+      // Save the new page
+      const savedPage = await createStoryPage(storyId, nextPageData);
+
+      // Get the story to check if we need to mark it as completed
+      const story = await getStory(storyId);
+
+      // If this was the final page, mark the story as completed
+      if (
+        story &&
+        nextPageData.pageNumber !== undefined &&
+        nextPageData.pageNumber >= story.targetPages
+      ) {
+        await updateStory(storyId, { isCompleted: true });
+      }
+
+      return savedPage;
+    } catch (error) {
+      return handleError(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     loading,
     error,
@@ -371,6 +492,8 @@ export const useStories = () => {
     getStoryPage,
     updateStoryPage,
     deleteStoryPage,
+    startStory,
+    continueStoryPage,
   };
 };
 
