@@ -56,6 +56,11 @@ export default function StoryReadPage() {
   // Combined loading state
   const [loading, setLoading] = useState(false);
 
+  const [isMounted, setIsMounted] = useState(false);
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   useEffect(() => {
     // Update the loading state from the hook
     setLoading(storiesLoading);
@@ -184,6 +189,10 @@ export default function StoryReadPage() {
   const toggleReading = () => {
     setIsReading(!isReading);
   };
+
+  if (!isMounted) {
+    return null; // or a simple loading placeholder
+  }
 
   // If we don't have story data yet, or we're loading, show a loading indicator
   if (!story || !currentStoryPage) {
