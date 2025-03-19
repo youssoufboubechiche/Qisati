@@ -435,6 +435,7 @@ export const useStories = () => {
           decisionTaken: decisionTaken,
         }
       );
+      setLoading(true);
 
       if (!updateResponse) {
         throw new Error("Failed to update last page");
@@ -454,8 +455,10 @@ export const useStories = () => {
         aiModel: generatedData.model,
         generationPrompt: generatedData.prompt,
       };
+      setLoading(true);
 
       const savedPage = await createStoryPage(storyId, nextPageData);
+      setLoading(true);
       const story = await getStory(storyId);
       if (
         story &&

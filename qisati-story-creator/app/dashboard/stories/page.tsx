@@ -1,85 +1,90 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
-import { motion } from "framer-motion"
-import { BookOpen, Search, SlidersHorizontal } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardFooter } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import Link from "next/link"
+import { useState, useEffect, useCallback } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { motion } from "framer-motion";
+import { BookOpen, Search, SlidersHorizontal } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import Link from "next/link";
+import useStories, { Story, StoryFilters } from "@/hooks/useStories"; // Import the hook and types
 
 export default function StoriesPage() {
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const tabParam = searchParams.get("tab")
-  const [activeTab, setActiveTab] = useState(tabParam || "all")
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get("tab");
+  const [activeTab, setActiveTab] = useState(tabParam || "all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortOrder, setSortOrder] = useState("newest");
+
+  // Use the stories hook
+  const { loading, error, getStories } = useStories();
+
+  const [stories, setStories] = useState<Story[]>([]);
+
+  // Create a stable fetch function with useCallback
+  const fetchStories = useCallback(async () => {
+    const filters: StoryFilters = {};
+
+    // Apply filters based on active tab
+    if (activeTab === "completed") {
+      filters.isCompleted = true;
+    } else if (activeTab === "in-progress") {
+      filters.isCompleted = false;
+    }
+
+    const response = await getStories(filters);
+    if (response) {
+      setStories(response.stories);
+    }
+  }, [activeTab, getStories]);
+
+  // Fetch stories when component mounts or filters change
+  useEffect(() => {
+    fetchStories();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab]); // Only re-run when activeTab changes
+
+  // Handle search and sorting
+  const filteredStories = stories
+    .filter((story) => {
+      if (!searchQuery) return true;
+      return story.title.toLowerCase().includes(searchQuery.toLowerCase());
+    })
+    .sort((a, b) => {
+      const dateA = new Date(a.createdAt);
+      const dateB = new Date(b.createdAt);
+
+      if (sortOrder === "newest") {
+        return dateB.getTime() - dateA.getTime();
+      } else if (sortOrder === "oldest") {
+        return dateA.getTime() - dateB.getTime();
+      } else if (sortOrder === "a-z") {
+        return a.title.localeCompare(b.title);
+      }
+      return 0;
+    });
 
   // Update the URL when the tab changes
   const handleTabChange = (value: string) => {
-    setActiveTab(value)
-    router.push(`/dashboard/stories?tab=${value}`, { scroll: false })
-  }
+    setActiveTab(value);
+    router.push(`/dashboard/stories?tab=${value}`, { scroll: false });
+  };
 
   // Update the active tab when the URL changes
   useEffect(() => {
     if (tabParam) {
-      setActiveTab(tabParam)
+      setActiveTab(tabParam);
     }
-  }, [tabParam])
-
-  const [stories] = useState([
-    {
-      id: 1,
-      title: "The Magical Forest",
-      date: "May 15, 2023",
-      image: "/placeholder.svg?height=200&width=300",
-      preview: "Once upon a time in a magical forest...",
-      completed: true,
-    },
-    {
-      id: 2,
-      title: "Space Adventure",
-      date: "April 28, 2023",
-      image: "/placeholder.svg?height=200&width=300",
-      preview: "Captain Zara looked out at the stars...",
-      completed: true,
-    },
-    {
-      id: 3,
-      title: "The Brave Knight",
-      date: "April 10, 2023",
-      image: "/placeholder.svg?height=200&width=300",
-      preview: "The kingdom was in danger...",
-      completed: true,
-    },
-    {
-      id: 4,
-      title: "Underwater Mystery",
-      date: "March 22, 2023",
-      image: "/placeholder.svg?height=200&width=300",
-      preview: "Deep beneath the ocean waves...",
-      completed: false,
-    },
-    {
-      id: 5,
-      title: "Dinosaur Discovery",
-      date: "March 5, 2023",
-      image: "/placeholder.svg?height=200&width=300",
-      preview: "The ground shook with each step...",
-      completed: true,
-    },
-    {
-      id: 6,
-      title: "Jungle Expedition",
-      date: "February 18, 2023",
-      image: "/placeholder.svg?height=200&width=300",
-      preview: "The dense jungle surrounded them...",
-      completed: false,
-    },
-  ])
+  }, [tabParam]);
 
   return (
     <div className="space-y-8">
@@ -89,25 +94,53 @@ export default function StoriesPage() {
         <div className="flex gap-3">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-3.5 h-5 w-5 text-gray-500" />
-            <Input placeholder="Find a story..." className="h-12 rounded-xl border-orange-200 pl-10 text-lg" />
+            <Input
+              placeholder="Find a story..."
+              className="h-12 rounded-xl border-orange-200 pl-10 text-lg"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
           </div>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="icon" className="h-12 w-12 rounded-xl border-orange-200">
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-12 w-12 rounded-xl border-orange-200"
+              >
                 <SlidersHorizontal className="h-5 w-5 text-orange-500" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="rounded-xl">
-              <DropdownMenuItem className="text-base">Newest First</DropdownMenuItem>
-              <DropdownMenuItem className="text-base">Oldest First</DropdownMenuItem>
-              <DropdownMenuItem className="text-base">A to Z</DropdownMenuItem>
+              <DropdownMenuItem
+                className="text-base"
+                onClick={() => setSortOrder("newest")}
+              >
+                Newest First
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="text-base"
+                onClick={() => setSortOrder("oldest")}
+              >
+                Oldest First
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="text-base"
+                onClick={() => setSortOrder("a-z")}
+              >
+                A to Z
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+      <Tabs
+        value={activeTab}
+        onValueChange={handleTabChange}
+        className="w-full"
+      >
         <TabsList className="grid h-14 w-full grid-cols-3 rounded-xl bg-orange-100 p-1">
           <TabsTrigger
             value="all"
@@ -129,24 +162,40 @@ export default function StoriesPage() {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="all" className="mt-8">
-          <StoriesGrid stories={stories} />
-        </TabsContent>
+        {loading ? (
+          <div className="mt-8 text-center text-xl">Loading stories...</div>
+        ) : error ? (
+          <div className="mt-8 text-center text-xl text-red-500">
+            Error loading stories: {error}
+          </div>
+        ) : (
+          <>
+            <TabsContent value="all" className="mt-8">
+              <StoriesGrid stories={filteredStories} />
+            </TabsContent>
 
-        <TabsContent value="completed" className="mt-8">
-          <StoriesGrid stories={stories.filter((story) => story.completed)} />
-        </TabsContent>
+            <TabsContent value="completed" className="mt-8">
+              <StoriesGrid
+                stories={filteredStories.filter((story) => story.isCompleted)}
+              />
+            </TabsContent>
 
-        <TabsContent value="in-progress" className="mt-8">
-          <StoriesGrid stories={stories.filter((story) => !story.completed)} />
-        </TabsContent>
+            <TabsContent value="in-progress" className="mt-8">
+              <StoriesGrid
+                stories={filteredStories.filter((story) => !story.isCompleted)}
+              />
+            </TabsContent>
+          </>
+        )}
       </Tabs>
     </div>
-  )
+  );
 }
 
-function StoriesGrid({ stories }: { stories: any[] }) {
-  return (
+function StoriesGrid({ stories }: { stories: Story[] }) {
+  return stories.length === 0 ? (
+    <div className="text-center text-xl py-8">No stories found.</div>
+  ) : (
     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
       {stories.map((story, index) => (
         <motion.div
@@ -159,20 +208,32 @@ function StoriesGrid({ stories }: { stories: any[] }) {
           <Card className="overflow-hidden rounded-2xl border-orange-200 transition-all hover:shadow-lg">
             <div className="relative aspect-video overflow-hidden">
               <img
-                src={story.image || "/placeholder.svg"}
+                src={
+                  story.coverImage || "/placeholder.svg?height=200&width=300"
+                }
                 alt={story.title}
                 className="h-full w-full object-cover transition-transform hover:scale-105"
               />
-              {!story.completed && (
+              {!story.isCompleted && (
                 <div className="absolute right-3 top-3 rounded-full bg-orange-500 px-3 py-1.5 text-base font-bold text-white">
                   Not Finished
                 </div>
               )}
             </div>
             <CardContent className="p-5">
-              <h3 className="mb-1 text-xl font-bold text-gray-800">{story.title}</h3>
-              <p className="mb-3 text-sm text-gray-500">{story.date}</p>
-              <p className="line-clamp-2 text-base text-gray-600">{story.preview}</p>
+              <h3 className="mb-1 text-xl font-bold text-gray-800">
+                {story.title}
+              </h3>
+              <p className="mb-3 text-sm text-gray-500">
+                {new Date(story.createdAt).toLocaleDateString("en-US", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })}
+              </p>
+              <p className="line-clamp-2 text-base text-gray-600">
+                {story.summary || `A story about ${story.setting}`}
+              </p>
             </CardContent>
             <CardFooter className="flex justify-between border-t border-orange-100 p-5">
               <Button
@@ -188,17 +249,29 @@ function StoriesGrid({ stories }: { stories: any[] }) {
               </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="lg" className="rounded-xl text-lg font-medium">
+                  <Button
+                    variant="ghost"
+                    size="lg"
+                    className="rounded-xl text-lg font-medium"
+                  >
                     More
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="rounded-xl">
                   <DropdownMenuItem asChild className="text-base">
-                    <Link href={`/dashboard/stories/${story.id}/edit`}>Edit</Link>
+                    <Link href={`/dashboard/stories/${story.id}/edit`}>
+                      Edit
+                    </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem className="text-base">Share</DropdownMenuItem>
-                  <DropdownMenuItem className="text-base">Download</DropdownMenuItem>
-                  <DropdownMenuItem className="text-base text-red-500">Delete</DropdownMenuItem>
+                  <DropdownMenuItem className="text-base">
+                    Share
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="text-base">
+                    Download
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="text-base text-red-500">
+                    Delete
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </CardFooter>
@@ -206,6 +279,5 @@ function StoriesGrid({ stories }: { stories: any[] }) {
         </motion.div>
       ))}
     </div>
-  )
+  );
 }
-

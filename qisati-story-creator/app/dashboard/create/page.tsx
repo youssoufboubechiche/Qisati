@@ -44,6 +44,7 @@ export default function CreateStory() {
   const [characterAge, setCharacterAge] = useState("child");
   const [storyLength, setStoryLength] = useState("medium");
   const [storyGenre, setStoryGenre] = useState("");
+  const [storyStyle, setStoryStyle] = useState("");
   const [storyPrompt, setStoryPrompt] = useState("");
 
   // Import the stories hook
@@ -67,8 +68,8 @@ export default function CreateStory() {
     }
   };
 
-  const handleGenreSelect = (genre: string) => {
-    setStoryGenre(genre);
+  const handleStyleSelect = (style: string) => {
+    setStoryStyle(style);
   };
 
   const getTargetPages = () => {
@@ -87,13 +88,13 @@ export default function CreateStory() {
   const getTargetAge = () => {
     switch (characterAge) {
       case "child":
-        return 7;
+        return 4;
       case "teen":
-        return 14;
+        return 8;
       case "adult":
-        return 18;
+        return 12;
       default:
-        return 7;
+        return 4;
     }
   };
 
@@ -116,15 +117,17 @@ export default function CreateStory() {
             ? presetThemes.find((t) => t.id === selectedTheme)?.title ||
               "My Story"
             : "Custom Adventure",
-        setting: getStorySettings(),
-        characterInfo: `Main character: ${
-          characterName || "Unnamed"
-        }. Age group: ${characterAge}.`,
+        setting:
+          getStorySettings() +
+          (storyPrompt
+            ? `\nSpecial instructions added by the user: ${storyPrompt}`
+            : ""),
+        characterInfo: `Main character: ${characterName || "Unnamed"}.`,
         genre: storyGenre || "adventure",
-        style: "interactive",
+        style: storyStyle || "interactive",
         targetAge: getTargetAge(),
         targetPages: getTargetPages(),
-        summary: storyPrompt,
+        summary: "",
         isPublic: false,
         tags: selectedTheme ? [selectedTheme] : [],
       });
@@ -380,13 +383,13 @@ export default function CreateStory() {
                       </SelectTrigger>
                       <SelectContent className="rounded-xl">
                         <SelectItem value="child">
-                          Kid (5-10 years old)
+                          Kid (4-8 years old)
+                        </SelectItem>
+                        <SelectItem value="kid">
+                          Big Kid (8-12 years old)
                         </SelectItem>
                         <SelectItem value="teen">
-                          Big Kid (11-17 years old)
-                        </SelectItem>
-                        <SelectItem value="adult">
-                          Grown-up (18+ years old)
+                          Teen (12+ years old)
                         </SelectItem>
                       </SelectContent>
                     </Select>
@@ -422,6 +425,34 @@ export default function CreateStory() {
                         </SelectItem>
                       </SelectContent>
                     </Select>
+                    <Label
+                      htmlFor="story-length"
+                      className="mb-3 mt-3 block text-xl font-bold text-gray-800"
+                    >
+                      What genre do is your story?
+                    </Label>
+                    <Select
+                      defaultValue="medium"
+                      value={storyGenre}
+                      onValueChange={setStoryGenre}
+                    >
+                      <SelectTrigger
+                        id="story-length"
+                        className="h-14 rounded-xl border-orange-200 text-lg"
+                      >
+                        <SelectValue placeholder="Pick a genre..." />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl">
+                        <SelectItem value="fantasy">Fantasy</SelectItem>
+                        <SelectItem value="mystery">Mystery</SelectItem>
+                        <SelectItem value="adventure">Adventure</SelectItem>
+                        <SelectItem value="sci-fi">Sci-Fi</SelectItem>
+                        <SelectItem value="comedy">Comedy</SelectItem>
+                        <SelectItem value="fairytale">Fairy Tale</SelectItem>
+                        <SelectItem value="bedtime">Bedtime</SelectItem>
+                        <SelectItem value="animal">Animal</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   <div className="rounded-2xl border-4 border-orange-300 bg-white p-6">
@@ -444,11 +475,11 @@ export default function CreateStory() {
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
                           className={`cursor-pointer rounded-xl ${
-                            storyGenre === type.id
+                            storyStyle === type.id
                               ? "bg-orange-300"
                               : "bg-orange-100"
                           } p-4 text-center hover:bg-orange-200`}
-                          onClick={() => handleGenreSelect(type.id)}
+                          onClick={() => handleStyleSelect(type.id)}
                         >
                           <type.icon className="mx-auto mb-2 h-8 w-8 text-orange-500" />
                           <span className="font-medium text-gray-800">
