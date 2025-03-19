@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
 
 // Types for the API responses and requests
 export interface Story {
@@ -134,7 +133,6 @@ export interface ContinuationData {
 export const useStories = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const queryClient = useQueryClient();
 
   // Helper function to handle API responses
   const handleResponse = async (response: Response) => {
@@ -154,35 +152,31 @@ export const useStories = () => {
     return null;
   };
 
-  // GET: Get all stories with optional filters using caching
+  // Get all stories with optional filters
   const getStories = async (
     filters?: StoryFilters
   ): Promise<StoriesResponse | null> => {
     setLoading(true);
     setError(null);
-    const queryKey = ["stories", filters];
 
     try {
-      const data = await queryClient.fetchQuery({
-        queryKey,
-        queryFn: async () => {
-          const params = new URLSearchParams();
-          if (filters) {
-            if (filters.isPublic !== undefined)
-              params.append("isPublic", filters.isPublic.toString());
-            if (filters.isCompleted !== undefined)
-              params.append("isCompleted", filters.isCompleted.toString());
-            if (filters.genre) params.append("genre", filters.genre);
-            if (filters.targetAge)
-              params.append("targetAge", filters.targetAge.toString());
-            if (filters.limit) params.append("limit", filters.limit.toString());
-            if (filters.page) params.append("page", filters.page.toString());
-          }
-          const queryString = params.toString() ? `?${params.toString()}` : "";
-          const response = await fetch(`/api/stories${queryString}`);
-          return handleResponse(response);
-        },
-      });
+      const params = new URLSearchParams();
+
+      if (filters) {
+        if (filters.isPublic !== undefined)
+          params.append("isPublic", filters.isPublic.toString());
+        if (filters.isCompleted !== undefined)
+          params.append("isCompleted", filters.isCompleted.toString());
+        if (filters.genre) params.append("genre", filters.genre);
+        if (filters.targetAge)
+          params.append("targetAge", filters.targetAge.toString());
+        if (filters.limit) params.append("limit", filters.limit.toString());
+        if (filters.page) params.append("page", filters.page.toString());
+      }
+
+      const queryString = params.toString() ? `?${params.toString()}` : "";
+      const response = await fetch(`/api/stories${queryString}`);
+      const data = await handleResponse(response);
       return data;
     } catch (error) {
       return handleError(error);
@@ -191,22 +185,21 @@ export const useStories = () => {
     }
   };
 
-  // POST: Create a new story and update cache accordingly
+  // Create a new story
   const createStory = async (
     storyData: CreateStoryData
   ): Promise<Story | null> => {
     setLoading(true);
     setError(null);
+
     try {
       const response = await fetch("/api/stories", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(storyData),
       });
+
       const data = await handleResponse(response);
-      // Invalidate stories list cache and set individual story cache
-      queryClient.invalidateQueries({ queryKey: ["stories"] });
-      queryClient.setQueryData(["story", data.id], data);
       return data;
     } catch (error) {
       return handleError(error);
@@ -215,19 +208,14 @@ export const useStories = () => {
     }
   };
 
-  // GET: Get a single story by ID using caching
+  // Get a single story by ID
   const getStory = async (id: number): Promise<Story | null> => {
     setLoading(true);
     setError(null);
-    const queryKey = ["story", id];
+
     try {
-      const data = await queryClient.fetchQuery({
-        queryKey,
-        queryFn: async () => {
-          const response = await fetch(`/api/stories/${id}`);
-          return handleResponse(response);
-        },
-      });
+      const response = await fetch(`/api/stories/${id}`);
+      const data = await handleResponse(response);
       return data;
     } catch (error) {
       return handleError(error);
@@ -236,22 +224,22 @@ export const useStories = () => {
     }
   };
 
-  // PUT: Update a story and update cache accordingly
+  // Update a story
   const updateStory = async (
     id: number,
     updateData: UpdateStoryData
   ): Promise<Story | null> => {
     setLoading(true);
     setError(null);
+
     try {
       const response = await fetch(`/api/stories/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updateData),
       });
+
       const data = await handleResponse(response);
-      queryClient.invalidateQueries({ queryKey: ["stories"] });
-      queryClient.setQueryData(["story", id], data);
       return data;
     } catch (error) {
       return handleError(error);
@@ -260,17 +248,17 @@ export const useStories = () => {
     }
   };
 
-  // DELETE: Delete a story and invalidate related caches
+  // Delete a story
   const deleteStory = async (id: number): Promise<boolean> => {
     setLoading(true);
     setError(null);
+
     try {
       const response = await fetch(`/api/stories/${id}`, {
         method: "DELETE",
       });
+
       await handleResponse(response);
-      queryClient.invalidateQueries({ queryKey: ["stories"] });
-      queryClient.removeQueries({ queryKey: ["story", id] });
       return true;
     } catch (error) {
       handleError(error);
@@ -280,21 +268,16 @@ export const useStories = () => {
     }
   };
 
-  // GET: Get all pages for a story using caching
+  // Get all pages for a story
   const getStoryPages = async (
     storyId: number
   ): Promise<StoryPage[] | null> => {
     setLoading(true);
     setError(null);
-    const queryKey = ["storyPages", storyId];
+
     try {
-      const data = await queryClient.fetchQuery({
-        queryKey,
-        queryFn: async () => {
-          const response = await fetch(`/api/stories/${storyId}/pages`);
-          return handleResponse(response);
-        },
-      });
+      const response = await fetch(`/api/stories/${storyId}/pages`);
+      const data = await handleResponse(response);
       return data;
     } catch (error) {
       return handleError(error);
@@ -303,22 +286,22 @@ export const useStories = () => {
     }
   };
 
-  // POST: Create a new page for a story and update cache accordingly
+  // Create a new page for a story
   const createStoryPage = async (
     storyId: number,
     pageData: CreatePageData
   ): Promise<StoryPage | null> => {
     setLoading(true);
     setError(null);
+
     try {
       const response = await fetch(`/api/stories/${storyId}/pages`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(pageData),
       });
+
       const data = await handleResponse(response);
-      // Invalidate pages cache for the story
-      queryClient.invalidateQueries({ queryKey: ["storyPages", storyId] });
       return data;
     } catch (error) {
       return handleError(error);
@@ -327,25 +310,17 @@ export const useStories = () => {
     }
   };
 
-  // GET: Get a specific page using caching
+  // Get a specific page
   const getStoryPage = async (
     storyId: number,
     pageId: number
   ): Promise<StoryPage | null> => {
     setLoading(true);
     setError(null);
-    // Use a composite key combining story and page
-    const queryKey = ["storyPage", storyId, pageId];
+
     try {
-      const data = await queryClient.fetchQuery({
-        queryKey,
-        queryFn: async () => {
-          const response = await fetch(
-            `/api/stories/${storyId}/pages/${pageId}`
-          );
-          return handleResponse(response);
-        },
-      });
+      const response = await fetch(`/api/stories/${storyId}/pages/${pageId}`);
+      const data = await handleResponse(response);
       return data;
     } catch (error) {
       return handleError(error);
@@ -354,7 +329,7 @@ export const useStories = () => {
     }
   };
 
-  // PATCH: Update a specific page and update cache accordingly
+  // Update a specific page
   const updateStoryPage = async (
     storyId: number,
     pageNumber: number,
@@ -362,6 +337,7 @@ export const useStories = () => {
   ): Promise<StoryPage | null> => {
     setLoading(true);
     setError(null);
+
     try {
       const response = await fetch(
         `/api/stories/${storyId}/pages/${pageNumber}`,
@@ -371,10 +347,8 @@ export const useStories = () => {
           body: JSON.stringify(updateData),
         }
       );
+
       const data = await handleResponse(response);
-      queryClient.invalidateQueries({ queryKey: ["storyPages", storyId] });
-      // Also update the specific page cache if needed
-      queryClient.setQueryData(["storyPage", storyId, data.id], data);
       return data;
     } catch (error) {
       return handleError(error);
@@ -383,20 +357,20 @@ export const useStories = () => {
     }
   };
 
-  // DELETE: Delete a specific page and invalidate related caches
+  // Delete a specific page
   const deleteStoryPage = async (
     storyId: number,
     pageId: number
   ): Promise<boolean> => {
     setLoading(true);
     setError(null);
+
     try {
       const response = await fetch(`/api/stories/${storyId}/pages/${pageId}`, {
         method: "DELETE",
       });
+
       await handleResponse(response);
-      queryClient.invalidateQueries({ queryKey: ["storyPages", storyId] });
-      queryClient.removeQueries({ queryKey: ["storyPage", storyId, pageId] });
       return true;
     } catch (error) {
       handleError(error);
@@ -406,17 +380,21 @@ export const useStories = () => {
     }
   };
 
-  // POST: Start a story - generate the first page, save it and update cache
+  // Start a story - generate the first page and save it
   const startStory = async (storyId: number): Promise<StoryPage | null> => {
     setLoading(true);
     setError(null);
+
     try {
-      // Generate the story beginning
+      // First, generate the story beginning
       const response = await fetch(`/api/stories/${storyId}/start`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
       });
+
       const generatedData = await handleResponse(response);
+
+      // Then save the generated content as the first page
       const pageData: CreatePageData = {
         text: generatedData.text,
         imagePrompt: generatedData.imagePrompt,
@@ -425,7 +403,10 @@ export const useStories = () => {
         aiModel: generatedData.model,
         generationPrompt: generatedData.prompt,
       };
+
+      // Save the page to the database
       const savedPage = await createStoryPage(storyId, pageData);
+
       return savedPage;
     } catch (error) {
       return handleError(error);
@@ -434,7 +415,6 @@ export const useStories = () => {
     }
   };
 
-  // POST: Continue a story - update last page, generate and save the next page
   const continueStory = async (
     storyId: number,
     decisionTaken: string
@@ -451,11 +431,16 @@ export const useStories = () => {
       const updateResponse = await updateStoryPage(
         storyId,
         lastPage.pageNumber,
-        { decisionTaken }
+        {
+          decisionTaken: decisionTaken,
+        }
       );
+      setLoading(true);
+
       if (!updateResponse) {
         throw new Error("Failed to update last page");
       }
+
       const response = await fetch(`/api/stories/${storyId}/continue`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -470,8 +455,10 @@ export const useStories = () => {
         aiModel: generatedData.model,
         generationPrompt: generatedData.prompt,
       };
+      setLoading(true);
+
       const savedPage = await createStoryPage(storyId, nextPageData);
-      // Check if the story should be marked as completed
+      setLoading(true);
       const story = await getStory(storyId);
       if (
         story &&
@@ -488,7 +475,7 @@ export const useStories = () => {
     }
   };
 
-  // POST: Continue a specific story page based on a decision and save the next page
+  // Continue a story page based on a decision and save the next page
   const continueStoryPage = async (
     storyId: number,
     pageNumber: number,
@@ -496,15 +483,22 @@ export const useStories = () => {
   ): Promise<StoryPage | null> => {
     setLoading(true);
     setError(null);
+
     try {
-      // Find the current page to update it with the decision
+      // First, get the current page to update it with the decision
       const pages = await getStoryPages(storyId);
       const currentPage = pages?.find((page) => page.pageNumber === pageNumber);
+
       if (!currentPage) {
         throw new Error("Current page not found");
       }
+
       // Update the current page with the decision taken
-      await updateStoryPage(storyId, currentPage.id, { decisionTaken });
+      await updateStoryPage(storyId, currentPage.id, {
+        decisionTaken: decisionTaken,
+      });
+
+      // Generate the continuation
       const response = await fetch(
         `/api/stories/${storyId}/pages/${pageNumber}/continue`,
         {
@@ -513,18 +507,26 @@ export const useStories = () => {
           body: JSON.stringify({ decisionTaken }),
         }
       );
+
       const generatedData = await handleResponse(response);
+
+      // Create the next page with the generated content
       const nextPageData: CreatePageData = {
         text: generatedData.text,
         imagePrompt: generatedData.imagePrompt,
         suggestedDecisions: generatedData.suggestedDecisions,
-        pageNumber: pageNumber + 1,
+        pageNumber: pageNumber + 1, // Increment page number
         aiModel: generatedData.model,
         generationPrompt: generatedData.prompt,
       };
+
+      // Save the new page
       const savedPage = await createStoryPage(storyId, nextPageData);
-      // Check if we need to mark the story as completed
+
+      // Get the story to check if we need to mark it as completed
       const story = await getStory(storyId);
+
+      // If this was the final page, mark the story as completed
       if (
         story &&
         nextPageData.pageNumber !== undefined &&
@@ -532,6 +534,7 @@ export const useStories = () => {
       ) {
         await updateStory(storyId, { isCompleted: true });
       }
+
       return savedPage;
     } catch (error) {
       return handleError(error);

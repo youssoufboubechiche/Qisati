@@ -61,10 +61,11 @@ export default function StoryReadPage() {
     setIsMounted(true);
   }, []);
 
-  useEffect(() => {
-    // Update the loading state from the hook
-    setLoading(storiesLoading);
-  }, [storiesLoading]);
+  //   useEffect(() => {
+  //     // Update the loading state from the hook
+
+  //     setLoading(storiesLoading);
+  //   }, [storiesLoading]);
 
   useEffect(() => {
     // Fetch the story and its pages when the component mounts
@@ -80,11 +81,13 @@ export default function StoryReadPage() {
 
         // Fetch the story details
         const storyData = await getStory(storyId);
+        setLoading(true);
         if (storyData) {
           setStory(storyData);
 
           // Fetch the story pages
           const pagesData = await getStoryPages(storyId);
+          setLoading(true);
           if (pagesData && pagesData.length > 0) {
             setStoryPages(pagesData);
             // Set the current page to the last page
@@ -138,6 +141,7 @@ export default function StoryReadPage() {
 
       // Continue the story with the decision
       const newPage = await continueStory(storyId, decisionText);
+      setLoading(true);
 
       if (newPage) {
         // Update story pages and current page
@@ -167,6 +171,7 @@ export default function StoryReadPage() {
 
         // Continue the story with the custom decision
         const newPage = await continueStory(storyId, customDecision);
+        setLoading(true);
 
         if (newPage) {
           // Update story pages and current page
