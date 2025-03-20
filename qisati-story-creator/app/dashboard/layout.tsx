@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/sidebar";
 import Image from "next/image";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function DashboardLayout({
   children,
@@ -36,6 +37,7 @@ export default function DashboardLayout({
 }) {
   const pathname = usePathname();
   const router = useRouter();
+  const { logout } = useAuth();
 
   // Check if the current path matches the nav item path or is a subpath
   const isActive = (path: string) => {
@@ -43,6 +45,11 @@ export default function DashboardLayout({
       return pathname === "/dashboard";
     }
     return pathname.startsWith(path);
+  };
+
+  const handleLogout = async () => {
+    await logout();
+    window.location.href = "/";
   };
 
   const queryClient = new QueryClient();
@@ -100,7 +107,7 @@ export default function DashboardLayout({
                   variant="ghost"
                   size="icon"
                   className="h-10 w-10 rounded-full text-red-500 hover:bg-red-100"
-                  onClick={() => router.push("/")}
+                  onClick={handleLogout}
                 >
                   <LogOut className="h-5 w-5" />
                 </Button>
