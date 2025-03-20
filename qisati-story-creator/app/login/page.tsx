@@ -37,7 +37,8 @@ export default function LoginPage() {
     try {
       await login(email, password);
       // redirect to dashboard
-      router.push("/dashboard");
+      //router.push("/dashboard");
+      window.location.href = "/dashboard";
     } catch (err) {
       setError(
         err instanceof Error
