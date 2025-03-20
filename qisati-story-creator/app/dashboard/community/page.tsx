@@ -20,6 +20,7 @@ import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import useStories, { Story } from "@/hooks/useStories"; // Import the hook
 import { Skeleton } from "@/components/ui/skeleton"; // Assuming you have this component
+import { getRandomImage } from "@/lib/image";
 
 export default function CommunityPage() {
   const router = useRouter();
@@ -268,7 +269,7 @@ function CommunityStoriesGrid({ stories }: { stories: Story[] }) {
           <Card className="overflow-hidden rounded-2xl border-orange-200 transition-all hover:shadow-lg">
             <div className="aspect-video overflow-hidden">
               <img
-                src={story.coverImage || "/placeholder.svg"}
+                src={getRandomImage() || "/placeholder.svg"}
                 alt={story.title}
                 className="h-full w-full object-cover transition-transform hover:scale-105"
               />

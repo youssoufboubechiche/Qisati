@@ -14,6 +14,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import useStories, { Story } from "@/hooks/useStories"; // Update this path to match your actual file structure
+import { getRandomImage } from "@/lib/image";
 
 export default function Dashboard() {
   const { getStories, loading, error } = useStories();
@@ -170,7 +171,7 @@ export default function Dashboard() {
                 <Card className="overflow-hidden rounded-2xl border-orange-200 transition-all hover:shadow-lg">
                   <div className="aspect-video overflow-hidden">
                     <img
-                      src={story.coverImage || "/placeholder.svg"}
+                      src={getRandomImage() || "/placeholder.svg"}
                       alt={story.title}
                       className="h-full w-full object-cover transition-transform hover:scale-105"
                     />

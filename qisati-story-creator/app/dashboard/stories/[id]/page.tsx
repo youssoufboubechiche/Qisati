@@ -17,6 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import useStories, { Story } from "@/hooks/useStories"; // Update this path to match your actual file structure
 import { use } from "react";
+import { getRandomImage } from "@/lib/image";
 
 export default function StoryDetailPage() {
   // Unwrap params with React.use() as per Next.js recommendation
@@ -208,7 +209,7 @@ export default function StoryDetailPage() {
         <Card className="mb-8 overflow-hidden rounded-3xl border-orange-200 shadow-lg">
           <div className="aspect-[2/1] w-full overflow-hidden">
             <img
-              src={story.coverImage || "/placeholder.svg?height=400&width=600"}
+              src={getRandomImage() || "/placeholder.svg?height=400&width=600"}
               alt={story.title}
               className="h-full w-full object-cover"
             />
@@ -354,7 +355,7 @@ export default function StoryDetailPage() {
                   <div className="aspect-video overflow-hidden">
                     <img
                       src={
-                        relatedStory.coverImage ||
+                        getRandomImage() ||
                         "/placeholder.svg?height=200&width=300"
                       }
                       alt={relatedStory.title}

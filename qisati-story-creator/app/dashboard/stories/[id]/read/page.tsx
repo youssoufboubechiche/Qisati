@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/tooltip";
 import MagicLoadingAnimation from "@/components/magic-loading-animation";
 import useStories from "@/hooks/useStories"; // Import the useStories hook
+import { getRandomImage } from "@/lib/image";
 
 export default function StoryReadPage() {
   const params = useParams();
@@ -330,7 +331,7 @@ export default function StoryReadPage() {
             <Card className="mb-8 overflow-hidden rounded-3xl border-orange-200 shadow-lg">
               <div className="aspect-[3/2] w-full overflow-hidden bg-orange-50">
                 <img
-                  src={formattedCurrentPage.image}
+                  src={getRandomImage()}
                   alt={`Story illustration for page ${currentPage + 1}`}
                   className="h-full w-full object-cover"
                 />

@@ -1,6 +1,7 @@
 "use client";
 
-import { useStories, Story, StoryPage } from "@/hooks/useStories";
+import { useStories, Story, StoryPage } from "@/hooks/useStoriesBackup";
+import { generateImage } from "@/lib/generateImage";
 import { useEffect, useState } from "react";
 
 export default function StoriesManagementPage() {
@@ -222,6 +223,8 @@ export default function StoriesManagementPage() {
   const handleFilterChange = (
     e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>
   ) => {
+    const response = generateImage("A beautiful sunset over the ocean", {});
+    console.log(response);
     const { name, value, type } = e.target;
 
     if (type === "checkbox") {

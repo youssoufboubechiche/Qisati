@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
 import useStories, { Story, StoryFilters } from "@/hooks/useStories"; // Import the hook and types
+import { getRandomImage } from "@/lib/image";
 
 export default function StoriesPage() {
   const router = useRouter();
@@ -211,7 +212,7 @@ function StoriesGrid({ stories }: { stories: Story[] }) {
             <div className="relative aspect-video overflow-hidden">
               <img
                 src={
-                  story.coverImage || "/placeholder.svg?height=200&width=300"
+                  getRandomImage() || "/placeholder.svg?height=200&width=300"
                 }
                 alt={story.title}
                 className="h-full w-full object-cover transition-transform hover:scale-105"
