@@ -36,7 +36,8 @@ export default function LoginPage() {
 
     try {
       await login(email, password);
-      // No need to redirect here as the login function already handles redirection
+      // redirect to dashboard
+      router.push("/dashboard");
     } catch (err) {
       setError(
         err instanceof Error
