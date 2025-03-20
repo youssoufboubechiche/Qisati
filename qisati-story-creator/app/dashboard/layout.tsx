@@ -50,7 +50,7 @@ export default function DashboardLayout({
   return (
     <QueryClientProvider client={queryClient}>
       <SidebarProvider>
-        <div className="flex min-h-screen bg-[#faf8f5]">
+        <div className="flex min-h-screen w-full bg-[#faf8f5]">
           <Sidebar className="border-r border-orange-200">
             <SidebarHeader className="border-b border-orange-200 px-6 py-4">
               <Link href="/dashboard" className="flex items-center gap-2">
