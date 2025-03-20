@@ -91,7 +91,7 @@ export default function DashboardLayout({
                   <AvatarFallback>KD</AvatarFallback>
                 </Avatar>
                 <div className="flex-1 overflow-hidden">
-                  <p className="truncate text-base font-medium">Khalid Doe</p>
+                  <p className="truncate text-base font-medium">Account</p>
                   <p className="truncate text-sm text-muted-foreground">
                     parent@example.com
                   </p>

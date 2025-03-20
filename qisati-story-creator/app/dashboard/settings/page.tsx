@@ -1,44 +1,60 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
-import { motion } from "framer-motion"
-import { Eye, EyeOff, Moon, Sun, Volume2 } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Label } from "@/components/ui/label"
-import { Switch } from "@/components/ui/switch"
-import { Slider } from "@/components/ui/slider"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Input } from "@/components/ui/input"
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { motion } from "framer-motion";
+import { Eye, EyeOff, Moon, Sun, Volume2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Slider } from "@/components/ui/slider";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Input } from "@/components/ui/input";
 
 export default function SettingsPage() {
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const tabParam = searchParams.get("tab")
-  const [activeTab, setActiveTab] = useState(tabParam || "accessibility")
-  const [theme, setTheme] = useState("light")
-  const [showPassword, setShowPassword] = useState(false)
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get("tab");
+  const [activeTab, setActiveTab] = useState(tabParam || "accessibility");
+  const [theme, setTheme] = useState("light");
+  const [showPassword, setShowPassword] = useState(false);
 
   // Update the URL when the tab changes
   const handleTabChange = (value: string) => {
-    setActiveTab(value)
-    router.push(`/dashboard/settings?tab=${value}`, { scroll: false })
-  }
+    setActiveTab(value);
+    router.push(`/dashboard/settings?tab=${value}`, { scroll: false });
+  };
 
   // Update the active tab when the URL changes
   useEffect(() => {
     if (tabParam) {
-      setActiveTab(tabParam)
+      setActiveTab(tabParam);
     }
-  }, [tabParam])
+  }, [tabParam]);
 
   return (
     <div className="mx-auto max-w-4xl space-y-8">
-      <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+      <Tabs
+        value={activeTab}
+        onValueChange={handleTabChange}
+        className="w-full"
+      >
         <TabsList className="grid h-14 w-full grid-cols-3 rounded-xl bg-orange-100 p-1">
           <TabsTrigger
             value="accessibility"
@@ -61,27 +77,42 @@ export default function SettingsPage() {
         </TabsList>
 
         <TabsContent value="accessibility" className="mt-8 space-y-8">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+          >
             <Card className="rounded-2xl border-orange-200 shadow-md">
               <CardHeader className="pb-2">
-                <CardTitle className="text-2xl font-bold text-red-500">How Stories Look</CardTitle>
-                <CardDescription className="text-base">Change how stories appear when you read them</CardDescription>
+                <CardTitle className="text-2xl font-bold text-red-500">
+                  How Stories Look
+                </CardTitle>
+                <CardDescription className="text-base">
+                  Change how stories appear when you read them
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-8 p-6">
                 <div className="space-y-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <Label htmlFor="theme-mode" className="text-xl font-bold text-gray-800">
+                      <Label
+                        htmlFor="theme-mode"
+                        className="text-xl font-bold text-gray-800"
+                      >
                         Light or Dark Mode
                       </Label>
-                      <p className="text-base text-gray-500">Choose between light and dark colors</p>
+                      <p className="text-base text-gray-500">
+                        Choose between light and dark colors
+                      </p>
                     </div>
                     <div className="flex items-center gap-2 rounded-full bg-orange-100 p-1">
                       <Button
                         variant="ghost"
                         size="lg"
                         onClick={() => setTheme("light")}
-                        className={`rounded-full px-4 py-2 ${theme === "light" ? "bg-white shadow-sm" : ""}`}
+                        className={`rounded-full px-4 py-2 ${
+                          theme === "light" ? "bg-white shadow-sm" : ""
+                        }`}
                       >
                         <Sun className="mr-2 h-5 w-5" />
                         <span className="text-base">Light</span>
@@ -90,7 +121,9 @@ export default function SettingsPage() {
                         variant="ghost"
                         size="lg"
                         onClick={() => setTheme("dark")}
-                        className={`rounded-full px-4 py-2 ${theme === "dark" ? "bg-white shadow-sm" : ""}`}
+                        className={`rounded-full px-4 py-2 ${
+                          theme === "dark" ? "bg-white shadow-sm" : ""
+                        }`}
                       >
                         <Moon className="mr-2 h-5 w-5" />
                         <span className="text-base">Dark</span>
@@ -100,30 +133,58 @@ export default function SettingsPage() {
 
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <Label htmlFor="font-size" className="text-xl font-bold text-gray-800">
+                      <Label
+                        htmlFor="font-size"
+                        className="text-xl font-bold text-gray-800"
+                      >
                         Text Size
                       </Label>
-                      <span className="text-base font-medium text-orange-500">Medium</span>
+                      <span className="text-base font-medium text-orange-500">
+                        Medium
+                      </span>
                     </div>
-                    <Slider id="font-size" defaultValue={[50]} max={100} step={1} className="py-2" />
+                    <Slider
+                      id="font-size"
+                      defaultValue={[50]}
+                      max={100}
+                      step={1}
+                      className="py-2"
+                    />
                   </div>
 
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <Label htmlFor="line-spacing" className="text-xl font-bold text-gray-800">
+                      <Label
+                        htmlFor="line-spacing"
+                        className="text-xl font-bold text-gray-800"
+                      >
                         Line Spacing
                       </Label>
-                      <span className="text-base font-medium text-orange-500">Normal</span>
+                      <span className="text-base font-medium text-orange-500">
+                        Normal
+                      </span>
                     </div>
-                    <Slider id="line-spacing" defaultValue={[40]} max={100} step={1} className="py-2" />
+                    <Slider
+                      id="line-spacing"
+                      defaultValue={[40]}
+                      max={100}
+                      step={1}
+                      className="py-2"
+                    />
                   </div>
 
                   <div>
-                    <Label htmlFor="font-family" className="text-xl font-bold text-gray-800">
+                    <Label
+                      htmlFor="font-family"
+                      className="text-xl font-bold text-gray-800"
+                    >
                       Font Style
                     </Label>
                     <Select defaultValue="inter">
-                      <SelectTrigger id="font-family" className="mt-2 h-12 rounded-xl border-orange-200 text-base">
+                      <SelectTrigger
+                        id="font-family"
+                        className="mt-2 h-12 rounded-xl border-orange-200 text-base"
+                      >
                         <SelectValue placeholder="Select font" />
                       </SelectTrigger>
                       <SelectContent className="rounded-xl">
@@ -154,46 +215,85 @@ export default function SettingsPage() {
           >
             <Card className="rounded-2xl border-orange-200 shadow-md">
               <CardHeader className="pb-2">
-                <CardTitle className="text-2xl font-bold text-red-500">Sound & Reading</CardTitle>
-                <CardDescription className="text-base">Change how stories sound when read aloud</CardDescription>
+                <CardTitle className="text-2xl font-bold text-red-500">
+                  Sound & Reading
+                </CardTitle>
+                <CardDescription className="text-base">
+                  Change how stories sound when read aloud
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-8 p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <Label htmlFor="text-to-speech" className="text-xl font-bold text-gray-800">
+                    <Label
+                      htmlFor="text-to-speech"
+                      className="text-xl font-bold text-gray-800"
+                    >
                       Read Stories Aloud
                     </Label>
-                    <p className="text-base text-gray-500">Let the app read stories to you</p>
+                    <p className="text-base text-gray-500">
+                      Let the app read stories to you
+                    </p>
                   </div>
-                  <Switch id="text-to-speech" defaultChecked className="h-6 w-12" />
+                  <Switch
+                    id="text-to-speech"
+                    defaultChecked
+                    className="h-6 w-12"
+                  />
                 </div>
 
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="narration-speed" className="text-xl font-bold text-gray-800">
+                    <Label
+                      htmlFor="narration-speed"
+                      className="text-xl font-bold text-gray-800"
+                    >
                       Reading Speed
                     </Label>
-                    <span className="text-base font-medium text-orange-500">Normal</span>
+                    <span className="text-base font-medium text-orange-500">
+                      Normal
+                    </span>
                   </div>
-                  <Slider id="narration-speed" defaultValue={[50]} max={100} step={1} className="py-2" />
+                  <Slider
+                    id="narration-speed"
+                    defaultValue={[50]}
+                    max={100}
+                    step={1}
+                    className="py-2"
+                  />
                 </div>
 
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="volume" className="text-xl font-bold text-gray-800">
+                    <Label
+                      htmlFor="volume"
+                      className="text-xl font-bold text-gray-800"
+                    >
                       Volume
                     </Label>
                     <Volume2 className="h-5 w-5 text-orange-500" />
                   </div>
-                  <Slider id="volume" defaultValue={[80]} max={100} step={1} className="py-2" />
+                  <Slider
+                    id="volume"
+                    defaultValue={[80]}
+                    max={100}
+                    step={1}
+                    className="py-2"
+                  />
                 </div>
 
                 <div>
-                  <Label htmlFor="narrator-voice" className="text-xl font-bold text-gray-800">
+                  <Label
+                    htmlFor="narrator-voice"
+                    className="text-xl font-bold text-gray-800"
+                  >
                     Voice Type
                   </Label>
                   <Select defaultValue="friendly">
-                    <SelectTrigger id="narrator-voice" className="mt-2 h-12 rounded-xl border-orange-200 text-base">
+                    <SelectTrigger
+                      id="narrator-voice"
+                      className="mt-2 h-12 rounded-xl border-orange-200 text-base"
+                    >
                       <SelectValue placeholder="Select voice" />
                     </SelectTrigger>
                     <SelectContent className="rounded-xl">
@@ -215,12 +315,21 @@ export default function SettingsPage() {
 
                 <div className="flex items-center justify-between">
                   <div>
-                    <Label htmlFor="sound-effects" className="text-xl font-bold text-gray-800">
+                    <Label
+                      htmlFor="sound-effects"
+                      className="text-xl font-bold text-gray-800"
+                    >
                       Sound Effects
                     </Label>
-                    <p className="text-base text-gray-500">Play fun sounds during stories</p>
+                    <p className="text-base text-gray-500">
+                      Play fun sounds during stories
+                    </p>
                   </div>
-                  <Switch id="sound-effects" defaultChecked className="h-6 w-12" />
+                  <Switch
+                    id="sound-effects"
+                    defaultChecked
+                    className="h-6 w-12"
+                  />
                 </div>
               </CardContent>
             </Card>
@@ -228,33 +337,62 @@ export default function SettingsPage() {
         </TabsContent>
 
         <TabsContent value="content" className="mt-8 space-y-8">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+          >
             <Card className="rounded-2xl border-orange-200 shadow-md">
               <CardHeader className="pb-2">
-                <CardTitle className="text-2xl font-bold text-red-500">Story Filters</CardTitle>
-                <CardDescription className="text-base">Control what appears in stories</CardDescription>
+                <CardTitle className="text-2xl font-bold text-red-500">
+                  Story Filters
+                </CardTitle>
+                <CardDescription className="text-base">
+                  Control what appears in stories
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-8 p-6">
                 <div>
-                  <Label htmlFor="content-rating" className="text-xl font-bold text-gray-800">
+                  <Label
+                    htmlFor="content-rating"
+                    className="text-xl font-bold text-gray-800"
+                  >
                     Story Rating
                   </Label>
-                  <p className="mb-4 text-base text-gray-500">Set the maximum rating for stories</p>
-                  <RadioGroup defaultValue="g" id="content-rating" className="space-y-3">
+                  <p className="mb-4 text-base text-gray-500">
+                    Set the maximum rating for stories
+                  </p>
+                  <RadioGroup
+                    defaultValue="g"
+                    id="content-rating"
+                    className="space-y-3"
+                  >
                     <div className="flex items-center space-x-3">
-                      <RadioGroupItem value="g" id="g-rating" className="h-5 w-5" />
+                      <RadioGroupItem
+                        value="g"
+                        id="g-rating"
+                        className="h-5 w-5"
+                      />
                       <Label htmlFor="g-rating" className="text-lg">
                         G (For all kids)
                       </Label>
                     </div>
                     <div className="flex items-center space-x-3">
-                      <RadioGroupItem value="pg" id="pg-rating" className="h-5 w-5" />
+                      <RadioGroupItem
+                        value="pg"
+                        id="pg-rating"
+                        className="h-5 w-5"
+                      />
                       <Label htmlFor="pg-rating" className="text-lg">
                         PG (Parent guidance)
                       </Label>
                     </div>
                     <div className="flex items-center space-x-3">
-                      <RadioGroupItem value="pg13" id="pg13-rating" className="h-5 w-5" />
+                      <RadioGroupItem
+                        value="pg13"
+                        id="pg13-rating"
+                        className="h-5 w-5"
+                      />
                       <Label htmlFor="pg13-rating" className="text-lg">
                         PG-13 (Some themes may be for older kids)
                       </Label>
@@ -263,14 +401,33 @@ export default function SettingsPage() {
                 </div>
 
                 <div className="space-y-4">
-                  <Label className="text-xl font-bold text-gray-800">Things to Avoid</Label>
-                  <p className="text-base text-gray-500">Stories will avoid these themes</p>
+                  <Label className="text-xl font-bold text-gray-800">
+                    Things to Avoid
+                  </Label>
+                  <p className="text-base text-gray-500">
+                    Stories will avoid these themes
+                  </p>
 
                   <div className="space-y-3">
-                    {["Scary content", "Conflict/fighting", "Sad endings", "Complex emotions"].map((theme) => (
+                    {[
+                      "Scary content",
+                      "Conflict/fighting",
+                      "Sad endings",
+                      "Complex emotions",
+                    ].map((theme) => (
                       <div key={theme} className="flex items-center space-x-3">
-                        <Switch id={`theme-${theme.toLowerCase().replace(/\s+/g, "-")}`} className="h-6 w-12" />
-                        <Label htmlFor={`theme-${theme.toLowerCase().replace(/\s+/g, "-")}`} className="text-lg">
+                        <Switch
+                          id={`theme-${theme
+                            .toLowerCase()
+                            .replace(/\s+/g, "-")}`}
+                          className="h-6 w-12"
+                        />
+                        <Label
+                          htmlFor={`theme-${theme
+                            .toLowerCase()
+                            .replace(/\s+/g, "-")}`}
+                          className="text-lg"
+                        >
                           {theme}
                         </Label>
                       </div>
@@ -279,12 +436,20 @@ export default function SettingsPage() {
                 </div>
 
                 <div>
-                  <Label htmlFor="language-complexity" className="text-xl font-bold text-gray-800">
+                  <Label
+                    htmlFor="language-complexity"
+                    className="text-xl font-bold text-gray-800"
+                  >
                     Word Difficulty
                   </Label>
-                  <p className="mb-3 text-base text-gray-500">Adjust vocabulary level for stories</p>
+                  <p className="mb-3 text-base text-gray-500">
+                    Adjust vocabulary level for stories
+                  </p>
                   <Select defaultValue="age-appropriate">
-                    <SelectTrigger id="language-complexity" className="h-12 rounded-xl border-orange-200 text-base">
+                    <SelectTrigger
+                      id="language-complexity"
+                      className="h-12 rounded-xl border-orange-200 text-base"
+                    >
                       <SelectValue placeholder="Select difficulty" />
                     </SelectTrigger>
                     <SelectContent className="rounded-xl">
@@ -306,26 +471,40 @@ export default function SettingsPage() {
         </TabsContent>
 
         <TabsContent value="account" className="mt-8 space-y-8">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+          >
             <Card className="rounded-2xl border-orange-200 shadow-md">
               <CardHeader className="pb-2">
-                <CardTitle className="text-2xl font-bold text-red-500">Account Information</CardTitle>
-                <CardDescription className="text-base">Manage your account details</CardDescription>
+                <CardTitle className="text-2xl font-bold text-red-500">
+                  Account Information
+                </CardTitle>
+                <CardDescription className="text-base">
+                  Manage your account details
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-8 p-6">
                 <div className="grid gap-6 sm:grid-cols-2">
                   <div>
-                    <Label htmlFor="parent-name" className="text-xl font-bold text-gray-800">
+                    <Label
+                      htmlFor="parent-name"
+                      className="text-xl font-bold text-gray-800"
+                    >
                       Parent Name
                     </Label>
                     <Input
                       id="parent-name"
-                      defaultValue="Khalid Doe"
+                      defaultValue="john Doe"
                       className="mt-2 h-12 rounded-xl border-orange-200 text-base"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="email" className="text-xl font-bold text-gray-800">
+                    <Label
+                      htmlFor="email"
+                      className="text-xl font-bold text-gray-800"
+                    >
                       Email
                     </Label>
                     <Input
@@ -335,7 +514,10 @@ export default function SettingsPage() {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="password" className="text-xl font-bold text-gray-800">
+                    <Label
+                      htmlFor="password"
+                      className="text-xl font-bold text-gray-800"
+                    >
                       Password
                     </Label>
                     <div className="relative mt-2">
@@ -352,16 +534,26 @@ export default function SettingsPage() {
                         className="absolute right-0 top-0 h-full px-4 py-2 text-gray-500"
                         onClick={() => setShowPassword(!showPassword)}
                       >
-                        {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                        {showPassword ? (
+                          <EyeOff className="h-5 w-5" />
+                        ) : (
+                          <Eye className="h-5 w-5" />
+                        )}
                       </Button>
                     </div>
                   </div>
                   <div>
-                    <Label htmlFor="language" className="text-xl font-bold text-gray-800">
+                    <Label
+                      htmlFor="language"
+                      className="text-xl font-bold text-gray-800"
+                    >
                       Language
                     </Label>
                     <Select defaultValue="en">
-                      <SelectTrigger id="language" className="mt-2 h-12 rounded-xl border-orange-200 text-base">
+                      <SelectTrigger
+                        id="language"
+                        className="mt-2 h-12 rounded-xl border-orange-200 text-base"
+                      >
                         <SelectValue placeholder="Select language" />
                       </SelectTrigger>
                       <SelectContent className="rounded-xl">
@@ -383,12 +575,15 @@ export default function SettingsPage() {
                 </div>
 
                 <div className="flex justify-end">
-                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
                     <Button
                       className="rounded-full bg-red-500 px-8 py-6 text-lg font-bold hover:bg-red-600"
                       onClick={() => {
                         // In a real app, this would save the settings
-                        alert("Settings saved successfully!")
+                        alert("Settings saved successfully!");
                       }}
                     >
                       Save Changes
@@ -406,8 +601,12 @@ export default function SettingsPage() {
           >
             <Card className="rounded-2xl border-orange-200 shadow-md">
               <CardHeader className="pb-2">
-                <CardTitle className="text-2xl font-bold text-red-500">Kid Profiles</CardTitle>
-                <CardDescription className="text-base">Manage profiles for your children</CardDescription>
+                <CardTitle className="text-2xl font-bold text-red-500">
+                  Kid Profiles
+                </CardTitle>
+                <CardDescription className="text-base">
+                  Manage profiles for your children
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6 p-6">
                 <div className="rounded-xl border-2 border-orange-200 p-5">
@@ -418,7 +617,9 @@ export default function SettingsPage() {
                         <AvatarFallback>SD</AvatarFallback>
                       </Avatar>
                       <div>
-                        <h4 className="text-xl font-bold text-gray-800">Sara Doe</h4>
+                        <h4 className="text-xl font-bold text-gray-800">
+                          Sara Doe
+                        </h4>
                         <p className="text-base text-gray-500">Age: 7</p>
                       </div>
                     </div>
@@ -427,7 +628,7 @@ export default function SettingsPage() {
                       className="rounded-xl border-orange-300 px-6 py-2 text-base font-medium text-orange-500 hover:bg-orange-50"
                       onClick={() => {
                         // In a real app, this would navigate to the edit profile page
-                        alert("Edit profile functionality would open here")
+                        alert("Edit profile functionality would open here");
                       }}
                     >
                       Edit
@@ -443,7 +644,9 @@ export default function SettingsPage() {
                         <AvatarFallback>AD</AvatarFallback>
                       </Avatar>
                       <div>
-                        <h4 className="text-xl font-bold text-gray-800">Adam Doe</h4>
+                        <h4 className="text-xl font-bold text-gray-800">
+                          Adam Doe
+                        </h4>
                         <p className="text-base text-gray-500">Age: 5</p>
                       </div>
                     </div>
@@ -452,7 +655,7 @@ export default function SettingsPage() {
                       className="rounded-xl border-orange-300 px-6 py-2 text-base font-medium text-orange-500 hover:bg-orange-50"
                       onClick={() => {
                         // In a real app, this would navigate to the edit profile page
-                        alert("Edit profile functionality would open here")
+                        alert("Edit profile functionality would open here");
                       }}
                     >
                       Edit
@@ -465,7 +668,7 @@ export default function SettingsPage() {
                   className="w-full rounded-xl border-4 border-dashed border-orange-300 py-6 text-lg font-bold text-orange-500 hover:bg-orange-50"
                   onClick={() => {
                     // In a real app, this would open a form to add a new profile
-                    alert("Add child profile form would open here")
+                    alert("Add child profile form would open here");
                   }}
                 >
                   + Add Kid Profile
@@ -476,6 +679,5 @@ export default function SettingsPage() {
         </TabsContent>
       </Tabs>
     </div>
-  )
+  );
 }
-
