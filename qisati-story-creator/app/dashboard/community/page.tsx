@@ -1,110 +1,104 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
-import { motion } from "framer-motion"
-import { BookOpen, Heart, MessageSquare, Search, Share2, ThumbsUp } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardFooter } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Badge } from "@/components/ui/badge"
-import Link from "next/link"
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { motion } from "framer-motion";
+import {
+  BookOpen,
+  Heart,
+  MessageSquare,
+  Search,
+  Share2,
+  ThumbsUp,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
+import useStories, { Story } from "@/hooks/useStories"; // Import the hook
+import { Skeleton } from "@/components/ui/skeleton"; // Assuming you have this component
 
 export default function CommunityPage() {
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const tabParam = searchParams.get("tab")
-  const [activeTab, setActiveTab] = useState(tabParam || "trending")
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get("tab");
+  const [activeTab, setActiveTab] = useState(tabParam || "trending");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedTag, setSelectedTag] = useState("All Tags");
+
+  // Use the stories hook
+  const { getStories, loading, error } = useStories();
+  const [stories, setStories] = useState<Story[]>([]);
 
   // Update the URL when the tab changes
   const handleTabChange = (value: string) => {
-    setActiveTab(value)
-    router.push(`/dashboard/community?tab=${value}`, { scroll: false })
-  }
+    setActiveTab(value);
+    router.push(`/dashboard/community?tab=${value}`, { scroll: false });
+  };
 
   // Update the active tab when the URL changes
   useEffect(() => {
     if (tabParam) {
-      setActiveTab(tabParam)
+      setActiveTab(tabParam);
     }
-  }, [tabParam])
+  }, [tabParam]);
 
-  const [communityStories] = useState([
-    {
-      id: 1,
-      title: "The Dragon's Quest",
-      author: "Emma K.",
-      authorAvatar: "/placeholder.svg?height=40&width=40",
-      date: "2 days ago",
-      image: "/placeholder.svg?height=200&width=300",
-      preview: "A brave dragon sets out to find the magical crystal...",
-      likes: 42,
-      comments: 8,
-      tags: ["Fantasy", "Dragons", "Adventure"],
-    },
-    {
-      id: 2,
-      title: "Robots of Tomorrow",
-      author: "Liam J.",
-      authorAvatar: "/placeholder.svg?height=40&width=40",
-      date: "1 week ago",
-      image: "/placeholder.svg?height=200&width=300",
-      preview: "In a world where robots and humans live together...",
-      likes: 36,
-      comments: 12,
-      tags: ["Sci-Fi", "Robots", "Future"],
-    },
-    {
-      id: 3,
-      title: "The Talking Animals",
-      author: "Sophia M.",
-      authorAvatar: "/placeholder.svg?height=40&width=40",
-      date: "2 weeks ago",
-      image: "/placeholder.svg?height=200&width=300",
-      preview: "When the animals in the forest suddenly started talking...",
-      likes: 28,
-      comments: 5,
-      tags: ["Animals", "Magic", "Friendship"],
-    },
-    {
-      id: 4,
-      title: "Pirate's Treasure",
-      author: "Noah P.",
-      authorAvatar: "/placeholder.svg?height=40&width=40",
-      date: "3 weeks ago",
-      image: "/placeholder.svg?height=200&width=300",
-      preview: "Captain Redbeard and his crew sail the seven seas...",
-      likes: 19,
-      comments: 3,
-      tags: ["Pirates", "Adventure", "Treasure"],
-    },
-    {
-      id: 5,
-      title: "The Enchanted Garden",
-      author: "Olivia S.",
-      authorAvatar: "/placeholder.svg?height=40&width=40",
-      date: "1 month ago",
-      image: "/placeholder.svg?height=200&width=300",
-      preview: "Behind the old stone wall was a garden unlike any other...",
-      likes: 53,
-      comments: 15,
-      tags: ["Magic", "Nature", "Mystery"],
-    },
-    {
-      id: 6,
-      title: "Journey to the Stars",
-      author: "Ethan G.",
-      authorAvatar: "/placeholder.svg?height=40&width=40",
-      date: "1 month ago",
-      image: "/placeholder.svg?height=200&width=300",
-      preview: "When a shooting star crashed in the backyard...",
-      likes: 31,
-      comments: 7,
-      tags: ["Space", "Adventure", "Sci-Fi"],
-    },
-  ])
+  // Fetch stories based on active tab
+  useEffect(() => {
+    const fetchStories = async () => {
+      let filters = {
+        isPublic: true,
+        limit: 20,
+        page: 1,
+      };
+
+      // Different filters based on tabs
+      switch (activeTab) {
+        case "trending":
+          // Sort by viewCount in API or client-side
+          break;
+        case "recent":
+          // Sort by newest
+          break;
+        case "following":
+          // Would need user following data
+          break;
+        case "favorites":
+          // Would need user favorites data
+          break;
+      }
+
+      const response = await getStories(filters);
+      if (response) {
+        setStories(response.stories);
+      }
+    };
+
+    fetchStories();
+  }, [activeTab]);
+
+  // Filter stories by search query and tag
+  const filteredStories = stories.filter((story) => {
+    const matchesSearch =
+      searchQuery === "" ||
+      story.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (story.summary &&
+        story.summary.toLowerCase().includes(searchQuery.toLowerCase()));
+
+    const matchesTag =
+      selectedTag === "All Tags" ||
+      (story.tags && story.tags.includes(selectedTag));
+
+    return matchesSearch && matchesTag;
+  });
+
+  // Get unique tags from all stories
+  const allTags = Array.from(
+    new Set(stories.flatMap((story) => story.tags || []))
+  );
 
   return (
     <div className="space-y-8">
@@ -113,11 +107,20 @@ export default function CommunityPage() {
 
         <div className="relative flex-1 sm:max-w-xs">
           <Search className="absolute left-3 top-3.5 h-5 w-5 text-gray-500" />
-          <Input placeholder="Find a story..." className="h-12 rounded-xl border-orange-200 pl-10 text-lg" />
+          <Input
+            placeholder="Find a story..."
+            className="h-12 rounded-xl border-orange-200 pl-10 text-lg"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
         </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+      <Tabs
+        value={activeTab}
+        onValueChange={handleTabChange}
+        className="w-full"
+      >
         <TabsList className="grid h-14 w-full grid-cols-4 rounded-xl bg-orange-100 p-1">
           <TabsTrigger
             value="trending"
@@ -146,60 +149,112 @@ export default function CommunityPage() {
         </TabsList>
 
         <div className="mt-6 flex flex-wrap gap-3">
-          <Badge variant="outline" className="rounded-full bg-white px-4 py-2 text-base font-medium">
+          <Badge
+            variant="outline"
+            className={`rounded-full ${
+              selectedTag === "All Tags" ? "bg-red-500 text-white" : "bg-white"
+            } px-4 py-2 text-base font-medium cursor-pointer`}
+            onClick={() => setSelectedTag("All Tags")}
+          >
             All Tags
           </Badge>
-          <Badge variant="outline" className="rounded-full bg-white px-4 py-2 text-base font-medium">
-            Adventure
-          </Badge>
-          <Badge variant="outline" className="rounded-full bg-white px-4 py-2 text-base font-medium">
-            Fantasy
-          </Badge>
-          <Badge variant="outline" className="rounded-full bg-white px-4 py-2 text-base font-medium">
-            Animals
-          </Badge>
-          <Badge variant="outline" className="rounded-full bg-white px-4 py-2 text-base font-medium">
-            Space
-          </Badge>
-          <Badge variant="outline" className="rounded-full bg-white px-4 py-2 text-base font-medium">
-            Mystery
-          </Badge>
+          {allTags.map((tag) => (
+            <Badge
+              key={tag}
+              variant="outline"
+              className={`rounded-full ${
+                selectedTag === tag ? "bg-red-500 text-white" : "bg-white"
+              } px-4 py-2 text-base font-medium cursor-pointer`}
+              onClick={() => setSelectedTag(tag)}
+            >
+              {tag}
+            </Badge>
+          ))}
         </div>
 
         <TabsContent value="trending" className="mt-8">
-          <CommunityStoriesGrid stories={communityStories} />
+          {loading ? (
+            <StoryLoadingSkeleton />
+          ) : error ? (
+            <div className="text-center p-8">
+              <p className="text-red-500">Error loading stories: {error}</p>
+            </div>
+          ) : filteredStories.length === 0 ? (
+            <div className="text-center p-8">
+              <p className="text-gray-500">No stories found.</p>
+            </div>
+          ) : (
+            <CommunityStoriesGrid stories={filteredStories} />
+          )}
         </TabsContent>
 
         <TabsContent value="recent" className="mt-8">
-          <CommunityStoriesGrid
-            stories={[...communityStories].sort((a, b) =>
-              a.date.includes("day") ? -1 : b.date.includes("day") ? 1 : 0,
-            )}
-          />
+          {loading ? (
+            <StoryLoadingSkeleton />
+          ) : error ? (
+            <div className="text-center p-8">
+              <p className="text-red-500">Error loading stories: {error}</p>
+            </div>
+          ) : filteredStories.length === 0 ? (
+            <div className="text-center p-8">
+              <p className="text-gray-500">No stories found.</p>
+            </div>
+          ) : (
+            <CommunityStoriesGrid
+              stories={[...filteredStories].sort(
+                (a, b) =>
+                  new Date(b.createdAt).getTime() -
+                  new Date(a.createdAt).getTime()
+              )}
+            />
+          )}
         </TabsContent>
 
         <TabsContent value="following" className="mt-8">
           <div className="flex flex-col items-center justify-center rounded-2xl border-4 border-dashed border-orange-300 bg-orange-50 p-12 text-center">
             <Heart className="mb-6 h-16 w-16 text-orange-300" />
-            <h3 className="mb-3 text-2xl font-bold text-gray-800">No followed friends yet</h3>
-            <p className="mb-8 text-lg text-gray-600">Follow your friends to see their stories here!</p>
+            <h3 className="mb-3 text-2xl font-bold text-gray-800">
+              No followed friends yet
+            </h3>
+            <p className="mb-8 text-lg text-gray-600">
+              Follow your friends to see their stories here!
+            </p>
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Button className="rounded-full bg-red-500 px-8 py-6 text-lg font-bold hover:bg-red-600" asChild>
-                <Link href="/dashboard/community?tab=trending">Find Friends</Link>
+              <Button
+                className="rounded-full bg-red-500 px-8 py-6 text-lg font-bold hover:bg-red-600"
+                asChild
+              >
+                <Link href="/dashboard/community?tab=trending">
+                  Find Friends
+                </Link>
               </Button>
             </motion.div>
           </div>
         </TabsContent>
 
         <TabsContent value="favorites" className="mt-8">
-          <CommunityStoriesGrid stories={communityStories.filter((story) => story.likes > 30)} />
+          {loading ? (
+            <StoryLoadingSkeleton />
+          ) : error ? (
+            <div className="text-center p-8">
+              <p className="text-red-500">Error loading stories: {error}</p>
+            </div>
+          ) : filteredStories.length === 0 ? (
+            <div className="text-center p-8">
+              <p className="text-gray-500">No favorite stories found.</p>
+            </div>
+          ) : (
+            <CommunityStoriesGrid
+              stories={filteredStories.filter((story) => story.viewCount > 30)}
+            />
+          )}
         </TabsContent>
       </Tabs>
     </div>
-  )
+  );
 }
 
-function CommunityStoriesGrid({ stories }: { stories: any[] }) {
+function CommunityStoriesGrid({ stories }: { stories: Story[] }) {
   return (
     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
       {stories.map((story, index) => (
@@ -213,7 +268,7 @@ function CommunityStoriesGrid({ stories }: { stories: any[] }) {
           <Card className="overflow-hidden rounded-2xl border-orange-200 transition-all hover:shadow-lg">
             <div className="aspect-video overflow-hidden">
               <img
-                src={story.image || "/placeholder.svg"}
+                src={story.coverImage || "/placeholder.svg"}
                 alt={story.title}
                 className="h-full w-full object-cover transition-transform hover:scale-105"
               />
@@ -221,22 +276,50 @@ function CommunityStoriesGrid({ stories }: { stories: any[] }) {
             <CardContent className="p-5">
               <div className="mb-4 flex items-center gap-2">
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src={story.authorAvatar} />
-                  <AvatarFallback>{story.author.charAt(0)}</AvatarFallback>
+                  <AvatarImage
+                    src={`/placeholder.svg?text=${
+                      story.author?.name?.charAt(0) || "A"
+                    }`}
+                  />
+                  <AvatarFallback>
+                    {story.author?.name?.charAt(0) || "A"}
+                  </AvatarFallback>
                 </Avatar>
-                <span className="text-base font-medium">{story.author}</span>
-                <span className="text-sm text-gray-500">• {story.date}</span>
+                <span className="text-base font-medium">
+                  {story.author?.name || "Anonymous"}
+                </span>
+                <span className="text-sm text-gray-500">
+                  • {formatDate(story.createdAt)}
+                </span>
               </div>
 
-              <h3 className="mb-3 text-xl font-bold text-gray-800">{story.title}</h3>
-              <p className="mb-4 line-clamp-2 text-base text-gray-600">{story.preview}</p>
+              <h3 className="mb-3 text-xl font-bold text-gray-800">
+                {story.title}
+              </h3>
+              <p className="mb-4 line-clamp-2 text-base text-gray-600">
+                {story.summary ||
+                  `A ${story.genre} story about ${story.setting}...`}
+              </p>
 
               <div className="mb-2 flex flex-wrap gap-2">
-                {story.tags.map((tag: string) => (
-                  <Badge key={tag} variant="secondary" className="rounded-full bg-orange-100 px-3 py-1 text-orange-700">
-                    {tag}
+                {story.tags &&
+                  story.tags.map((tag: string) => (
+                    <Badge
+                      key={tag}
+                      variant="secondary"
+                      className="rounded-full bg-orange-100 px-3 py-1 text-orange-700"
+                    >
+                      {tag}
+                    </Badge>
+                  ))}
+                {!story.tags || story.tags.length === 0 ? (
+                  <Badge
+                    variant="secondary"
+                    className="rounded-full bg-orange-100 px-3 py-1 text-orange-700"
+                  >
+                    {story.genre}
                   </Badge>
-                ))}
+                ) : null}
               </div>
             </CardContent>
             <CardFooter className="flex justify-between border-t border-orange-100 p-5">
@@ -247,7 +330,7 @@ function CommunityStoriesGrid({ stories }: { stories: any[] }) {
                   className="flex items-center gap-1 rounded-lg text-base font-medium text-orange-500 hover:text-orange-600"
                 >
                   <ThumbsUp className="h-5 w-5" />
-                  <span>{story.likes}</span>
+                  <span>{story.viewCount || 0}</span>
                 </Button>
                 <Button
                   variant="ghost"
@@ -255,7 +338,7 @@ function CommunityStoriesGrid({ stories }: { stories: any[] }) {
                   className="flex items-center gap-1 rounded-lg text-base font-medium text-orange-500 hover:text-orange-600"
                 >
                   <MessageSquare className="h-5 w-5" />
-                  <span>{story.comments}</span>
+                  <span>{story.pages?.length || 0}</span>
                 </Button>
               </div>
               <div className="flex gap-2">
@@ -272,7 +355,7 @@ function CommunityStoriesGrid({ stories }: { stories: any[] }) {
                   className="rounded-lg text-base font-medium text-blue-500 hover:text-blue-600"
                   asChild
                 >
-                  <Link href={`/dashboard/community/${story.id}`}>
+                  <Link href={`/dashboard/stories/${story.id}`}>
                     <BookOpen className="h-5 w-5" />
                     Read
                   </Link>
@@ -283,6 +366,67 @@ function CommunityStoriesGrid({ stories }: { stories: any[] }) {
         </motion.div>
       ))}
     </div>
-  )
+  );
 }
 
+// Helper function to format dates
+function formatDate(dateString: string): string {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffTime = Math.abs(now.getTime() - date.getTime());
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 1) {
+    return "1 day ago";
+  } else if (diffDays < 7) {
+    return `${diffDays} days ago`;
+  } else if (diffDays < 31) {
+    const weeks = Math.floor(diffDays / 7);
+    return `${weeks} ${weeks === 1 ? "week" : "weeks"} ago`;
+  } else {
+    const months = Math.floor(diffDays / 30);
+    return `${months} ${months === 1 ? "month" : "months"} ago`;
+  }
+}
+
+// Loading skeleton component
+function StoryLoadingSkeleton() {
+  return (
+    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {[1, 2, 3, 4, 5, 6].map((index) => (
+        <Card
+          key={index}
+          className="overflow-hidden rounded-2xl border-orange-200"
+        >
+          <div className="aspect-video">
+            <Skeleton className="h-full w-full" />
+          </div>
+          <CardContent className="p-5">
+            <div className="mb-4 flex items-center gap-2">
+              <Skeleton className="h-8 w-8 rounded-full" />
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-4 w-16" />
+            </div>
+            <Skeleton className="mb-3 h-6 w-3/4" />
+            <Skeleton className="mb-2 h-4 w-full" />
+            <Skeleton className="mb-4 h-4 w-full" />
+            <div className="mb-2 flex gap-2">
+              <Skeleton className="h-6 w-16 rounded-full" />
+              <Skeleton className="h-6 w-20 rounded-full" />
+            </div>
+          </CardContent>
+          <CardFooter className="flex justify-between border-t border-orange-100 p-5">
+            <div className="flex gap-4">
+              <Skeleton className="h-8 w-16" />
+              <Skeleton className="h-8 w-16" />
+            </div>
+            <div className="flex gap-2">
+              <Skeleton className="h-8 w-8" />
+              <Skeleton className="h-8 w-16" />
+            </div>
+          </CardFooter>
+        </Card>
+      ))}
+    </div>
+  );
+}

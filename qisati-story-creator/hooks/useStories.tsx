@@ -22,7 +22,7 @@ export interface Story {
   updatedAt: string;
   author?: {
     id: number;
-    name: true;
+    name: string;
   };
   pages?: StoryPage[];
 }
