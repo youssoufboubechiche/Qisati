@@ -34,6 +34,8 @@ export default function StoriesPage() {
   const fetchStories = useCallback(async () => {
     const filters: StoryFilters = {};
 
+    filters.isPublic = false; // temporary
+
     // Apply filters based on active tab
     if (activeTab === "completed") {
       filters.isCompleted = true;

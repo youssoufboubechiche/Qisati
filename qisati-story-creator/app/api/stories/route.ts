@@ -23,13 +23,47 @@ export async function GET(request: NextRequest) {
       : 1;
     const offset = (page - 1) * limit;
 
-    // Build filter object
-    const filter: any = {};
+    // Get auth token from cookies
+    const cookieStore = await cookies();
+    const token = cookieStore.get("auth_token")?.value;
+    let userId = null;
 
-    if (isPublic !== null) filter.isPublic = isPublic === "true";
+    if (token) {
+      const user = await getUserSession(token);
+      if (user) {
+        userId = user.id;
+      }
+    }
+
+    // Build filter object - only show public stories OR stories owned by the user
+    const filter: any = {
+      OR: [{ isPublic: true }, ...(userId ? [{ authorId: userId }] : [])],
+    };
+
+    // Add additional filters
     if (isCompleted !== null) filter.isCompleted = isCompleted === "true";
     if (genre) filter.genre = genre;
     if (targetAge) filter.targetAge = targetAge;
+    if (isPublic !== null) {
+      // If specifically requesting public/private stories,
+      // handle differently for authenticated vs non-authenticated users
+      if (userId) {
+        // For authenticated users, apply the isPublic filter only to their stories
+        if (isPublic === "true") {
+          // Show public stories (from anyone) and any public stories by the user
+          // This is already covered by the OR condition above
+        } else {
+          // Show only private stories by the current user
+          filter.OR = undefined;
+          filter.isPublic = false;
+          filter.authorId = userId;
+        }
+      } else {
+        // For non-authenticated users, they can only see public stories
+        filter.OR = undefined;
+        filter.isPublic = true;
+      }
+    }
 
     // Get stories with pagination
     const stories = await prisma.story.findMany({
@@ -87,25 +121,20 @@ export async function POST(request: NextRequest) {
     // Get auth token from cookies
     const cookieStore = await cookies();
     const token = cookieStore.get("auth_token")?.value;
-
     if (!token) {
       return NextResponse.json(
         { error: "Authentication required" },
         { status: 401 }
       );
     }
-
     const user = await getUserSession(token);
-
     if (!user) {
       return NextResponse.json(
         { error: "Authentication required" },
         { status: 401 }
       );
     }
-
     const body = await request.json();
-
     // Validate required fields
     const {
       title,
@@ -116,7 +145,6 @@ export async function POST(request: NextRequest) {
       targetAge,
       targetPages,
     } = body;
-
     if (
       !title ||
       !setting ||
@@ -131,7 +159,6 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-
     const story = await prisma.story.create({
       data: {
         title,
@@ -144,12 +171,12 @@ export async function POST(request: NextRequest) {
         summary: body.summary,
         coverImage: body.coverImage,
         tags: body.tags || [],
+        isPublic: body.isPublic || false,
         author: {
           connect: { id: user.id },
         },
       },
     });
-
     return NextResponse.json(story, { status: 201 });
   } catch (error) {
     console.error("Error creating story:", error);
